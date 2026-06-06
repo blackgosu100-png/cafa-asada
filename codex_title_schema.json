@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["bestTitle", "bestReason", "titles"],
+  "properties": {
+    "bestTitle": {
+      "type": "string"
+    },
+    "bestReason": {
+      "type": "string"
+    },
+    "titles": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

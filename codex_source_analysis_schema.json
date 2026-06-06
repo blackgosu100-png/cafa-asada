@@ -1,0 +1,93 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "summary": {
+      "type": "string"
+    },
+    "extractedText": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "coreKeywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "originalCore": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verifiedFacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "imageClues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "emotionCore": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "productBridge": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "titleMustUse": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "titleSafeFacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "titleAvoid": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cautionFlags": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "summary",
+    "extractedText",
+    "coreKeywords",
+    "originalCore",
+    "verifiedFacts",
+    "imageClues",
+    "emotionCore",
+    "productBridge",
+    "titleMustUse",
+    "titleSafeFacts",
+    "titleAvoid",
+    "cautionFlags"
+  ]
+}
