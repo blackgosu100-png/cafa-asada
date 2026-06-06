@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>네이버 리뷰 복사 버튼 설치</title>
+  <style>
+    :root {
+      --bg: #f6f8f5;
+      --panel: #fff;
+      --ink: #1f2823;
+      --muted: #66736b;
+      --line: #d9e3dc;
+      --green: #137a42;
+      --soft: #e7f4ec;
+      --danger: #8a3c18;
+      --danger-soft: #fff0e8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 34px 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0 0 24px;
+      color: var(--muted);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(24, 44, 32, 0.08);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    li + li { margin-top: 8px; }
+
+    .bookmarklet {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 7px;
+      background: var(--green);
+      color: #fff;
+      font-weight: 800;
+      text-decoration: none;
+      user-select: none;
+      margin: 10px 0;
+    }
+
+    .tip {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .warning {
+      background: var(--danger-soft);
+      border-color: #f2c7b1;
+      color: var(--danger);
+      font-size: 14px;
+    }
+
+    code {
+      background: #eef3ef;
+      border: 1px solid #dce6df;
+      border-radius: 5px;
+      padding: 2px 5px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>네이버 리뷰 복사 버튼 설치</h1>
+    <p class="lead">직원은 코드를 볼 필요 없이, 스마트스토어 리뷰 화면에서 즐겨찾기 버튼만 누르면 됩니다.</p>
+
+    <section class="panel">
+      <h2>처음 한 번만 설치</h2>
+      <ol>
+        <li>Chrome에서 즐겨찾기 바가 안 보이면 <code>Ctrl + Shift + B</code>를 누릅니다.</li>
+        <li>아래 초록 버튼을 마우스로 끌어서 즐겨찾기 바에 놓습니다.</li>
+        <li>이후 네이버 스마트스토어 리뷰 화면에서 그 즐겨찾기 버튼을 누르면 됩니다.</li>
+      </ol>
+      <a class="bookmarklet" id="bookmarklet" href="#">리뷰 복사</a>
+      <span class="tip">버튼을 클릭하는 게 아니라, 즐겨찾기 바로 드래그해서 넣는 방식입니다.</span>
+    </section>
+
+    <section class="panel">
+      <h2>매번 사용하는 방법</h2>
+      <ol>
+        <li>스마트스토어 상품 페이지에서 리뷰 창을 엽니다.</li>
+        <li>필요한 만큼 아래로 스크롤해서 리뷰를 화면에 로딩합니다.</li>
+        <li>즐겨찾기 바의 <code>리뷰 복사</code>를 누릅니다.</li>
+        <li>리뷰 내용이 자동으로 클립보드에 복사되고, CSV 파일도 같이 내려받습니다.</li>
+        <li>복사된 내용을 게시글 생성기에 붙여넣어 제목과 본문 초안을 만듭니다.</li>
+      </ol>
+    </section>
+
+    <section class="panel warning">
+      공개로 보이는 리뷰만 복사하는 용도입니다. 고객 아이디, 개인정보, 비공개 정보는 게시글에 넣지 말고, 실제 후기를 특정 고객 발언처럼 꾸미지 않는 방식으로 쓰는 게 좋습니다.
+    </section>
+  </main>
+
+  <script>
+    const code = `(() => {
+      const items = [...document.querySelectorAll('li[id^="REVIEW_ITEM_"]')];
+      const rows = items.map((li, index) => {
+        const option = li.querySelector('[id^="review_option_"]')?.innerText?.trim() || '';
+        const content = li.querySelector('[id^="review_content_"]')?.innerText?.trim() || li.innerText?.trim() || '';
+        return { index: index + 1, option, content };
+      }).filter((row) => row.content);
+
+      if (!rows.length) {
+        alert('현재 화면에서 리뷰를 찾지 못했습니다. 리뷰 창을 열고 아래로 조금 스크롤한 뒤 다시 눌러주세요.');
+        return;
+      }
+
+      const text = rows.map((row) => {
+        const optionLine = row.option ? '[' + row.option + ']\\n' : '';
+        return row.index + '. ' + optionLine + row.content;
+      }).join('\\n\\n---\\n\\n');
+
+      const csv = [['번호', '옵션', '리뷰내용'], ...rows.map((row) => [row.index, row.option, row.content])]
+        .map((row) => row.map((value) => '"' + String(value).replaceAll('"', '""') + '"').join(','))
+        .join('\\n');
+
+      const saveCsv = () => {
+        const blob = new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'naver_reviews_visible.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 500);
+      };
+
+      const done = () => {
+        saveCsv();
+        alert(rows.length + '개 리뷰를 복사했고 CSV 파일도 저장했습니다.\\n게시글 생성기에 붙여넣으면 됩니다.');
+      };
+
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => {
+          window.prompt('자동 복사가 막혔습니다. 아래 내용을 Ctrl+C로 복사하세요.', text);
+          saveCsv();
+        });
+      } else {
+        window.prompt('아래 내용을 Ctrl+C로 복사하세요.', text);
+        saveCsv();
+      }
+    })();`;
+
+    document.getElementById("bookmarklet").href = "javascript:" + encodeURIComponent(code);
+  </script>
+</body>
+</html>

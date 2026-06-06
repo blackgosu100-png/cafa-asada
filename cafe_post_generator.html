@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>아프니까 사장이다 게시글 반자동 생성기</title>
+  <style>
+    :root {
+      --bg: #f5f7f4;
+      --panel: #ffffff;
+      --ink: #1c2520;
+      --muted: #66736b;
+      --line: #dbe3dc;
+      --green: #147d42;
+      --green-soft: #e7f4ec;
+      --amber: #8a5a00;
+      --amber-soft: #fff4d6;
+      --blue: #245a8d;
+      --blue-soft: #e8f2fb;
+      --shadow: 0 8px 24px rgba(24, 44, 32, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    header {
+      padding: 24px 28px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(360px, 520px) minmax(480px, 1fr);
+      gap: 18px;
+      padding: 18px;
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .pane {
+      padding: 18px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #cbd6ce;
+      border-radius: 6px;
+      padding: 10px 11px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 4px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid #cbd6ce;
+      background: #fff;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chip input {
+      width: auto;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      color: #fff;
+      background: var(--green);
+    }
+
+    .secondary {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .output {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .box h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .title-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .title-list li {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 6px;
+      background: #f8faf8;
+      border: 1px solid #e6ede7;
+    }
+
+    .num {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .draft {
+      white-space: pre-wrap;
+      background: #f8faf8;
+      border: 1px solid #e6ede7;
+      border-radius: 6px;
+      padding: 12px;
+      min-height: 120px;
+    }
+
+    .note {
+      border-color: #f0d99d;
+      background: var(--amber-soft);
+      color: #4d390d;
+      font-size: 13px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .metric {
+      padding: 10px;
+      border-radius: 6px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 18px;
+      color: var(--ink);
+    }
+
+    @media (max-width: 980px) {
+      main { grid-template-columns: 1fr; }
+      .row, .metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>아프니까 사장이다 게시글 반자동 생성기</h1>
+    <div class="sub">고객 후기와 업종만 넣으면, 반응이 좋았던 제목 공식에 맞춰 제목 후보와 본문 초안을 만듭니다.</div>
+  </header>
+
+  <main>
+    <section class="pane">
+      <h2>입력</h2>
+
+      <div class="row">
+        <div>
+          <label for="industry">타깃 업종</label>
+          <input id="industry" value="김밥집" placeholder="예: 김밥집, 돈까스집, 반찬가게, 한식뷔페" />
+        </div>
+        <div>
+          <label for="product">상품명</label>
+          <input id="product" value="주방고수 양배추 슬라이서" />
+        </div>
+      </div>
+
+      <label for="review">고객 후기 원문</label>
+      <textarea id="review" placeholder="스마트스토어 리뷰나 실제 고객 후기를 붙여넣으세요.">역시 장비빨이네요. 일하는 시간이 훨씬 줄었네요.</textarea>
+
+      <div class="row">
+        <div>
+          <label for="tone">글 분위기</label>
+          <select id="tone">
+            <option value="auto">자동으로 프레임 섞기</option>
+            <option value="natural">커뮤니티 자연스러운 말투</option>
+            <option value="story">후기/사연형</option>
+            <option value="question">질문/댓글 유도형</option>
+            <option value="checklist">체크리스트형</option>
+            <option value="compare">비교형</option>
+            <option value="cost">시간/비용형</option>
+            <option value="staff">직원 고충형</option>
+            <option value="info">정보 정리형</option>
+          </select>
+        </div>
+        <div>
+          <label for="angle">제목 각도</label>
+          <select id="angle">
+            <option value="auto">자동 추천</option>
+            <option value="question">질문형</option>
+            <option value="pain">고민 공감형</option>
+            <option value="story">후기/사연형</option>
+            <option value="curiosity">궁금증형</option>
+            <option value="compare">비교형</option>
+          </select>
+        </div>
+      </div>
+
+      <label>강조할 포인트</label>
+      <div class="chips">
+        <label class="chip"><input type="checkbox" value="time" checked /> 시간 단축</label>
+        <label class="chip"><input type="checkbox" value="wrist" checked /> 손목/안전</label>
+        <label class="chip"><input type="checkbox" value="uniform" checked /> 일정한 채</label>
+        <label class="chip"><input type="checkbox" value="volume" /> 대량 손질</label>
+        <label class="chip"><input type="checkbox" value="as" /> 국내 AS</label>
+        <label class="chip"><input type="checkbox" value="waste" /> 버리는 양 감소</label>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="generate">생성하기</button>
+        <button class="secondary" id="sample">후기 예시 넣기</button>
+      </div>
+    </section>
+
+    <section class="output">
+      <div class="box">
+        <h3>리뷰 데이터에서 확인된 글감</h3>
+        <div class="metrics">
+          <div class="metric"><strong>1,041</strong>리뷰 수</div>
+          <div class="metric"><strong>93.4%</strong>5점 리뷰</div>
+          <div class="metric"><strong>29.1%</strong>시간 단축 언급</div>
+          <div class="metric"><strong>20.4%</strong>업소/매장 언급</div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h3>제목 후보</h3>
+        <ul class="title-list" id="titles"></ul>
+      </div>
+
+      <div class="box">
+        <h3>본문 초안</h3>
+        <div class="draft" id="draft"></div>
+      </div>
+
+      <div class="box note">
+        후기 기반 글은 실제 리뷰에서 확인된 내용만 쓰는 게 좋습니다. 특정 고객이 한 말처럼 따옴표로 꾸미기보다는 “후기에서 자주 나온 포인트”로 풀어 쓰면 부담이 적습니다.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const samples = [
+      "김밥집 당근채 썰다 손목 나가기 직전 구매했는데 길게 채를 썰 수도 있고 좋아요.",
+      "잘 잘려서 나와요. 시간이 일하는데 많이 절약되어서 좋아요. 특히 식당이나 주방하시는 분들 대량으로 처리할 때 좋아요.",
+      "칼날도 잘 들고 절단 속도 빨라서 주방 일이 훨씬 편해졌어요. 채썰기 모양도 일정하게 잘 나와서 음식 퀄리티가 좋아졌습니다.",
+      "고기집 운영중인데 양파와 편마늘 써는데 최고네요. 무엇보다 직원들이 좋아하네요.",
+      "다른 기계 쓰다가 쓰레기가 너무 많이 나와서 이걸로 바꿨는데 대만족이에요. 버리는 거 하나 없이 자동으로 해주니까 너무 편해요."
+    ];
+
+    function checkedPoints() {
+      return [...document.querySelectorAll(".chip input:checked")].map((el) => el.value);
+    }
+
+    function inferPain(review, points) {
+      if (/손목|손|다치|안전|칼질/.test(review) || points.includes("wrist")) return "손목 부담";
+      if (/시간|빨|줄|단축|편/.test(review) || points.includes("time")) return "준비 시간";
+      if (/일정|균일|굵기|모양|퀄리티/.test(review) || points.includes("uniform")) return "채 굵기";
+      if (/대량|많이|식수|통|킬로|kg/.test(review) || points.includes("volume")) return "대량 손질";
+      return "야채 손질";
+    }
+
+    function inferBenefit(review, points) {
+      const benefits = [];
+      if (/시간|빨|줄|단축|금방|편/.test(review) || points.includes("time")) benefits.push("손질 시간이 줄었다");
+      if (/손목|손|다치|안전/.test(review) || points.includes("wrist")) benefits.push("손목 부담을 덜었다");
+      if (/일정|균일|굵기|모양|퀄리티/.test(review) || points.includes("uniform")) benefits.push("채 굵기가 일정해졌다");
+      if (/대량|많이|식수|통|킬로|kg/.test(review) || points.includes("volume")) benefits.push("대량 작업이 편해졌다");
+      if (/AS|a\/s|국내/.test(review) || points.includes("as")) benefits.push("국내 AS를 기대할 수 있다");
+      if (/쓰레기|버리는|로스|버릴/.test(review) || points.includes("waste")) benefits.push("버리는 양이 줄었다");
+      return benefits.length ? benefits : ["주방 일이 편해졌다"];
+    }
+
+    function pickFrame(tone, industry, review) {
+      if (tone !== "auto") return tone;
+      const frames = ["natural", "story", "question", "checklist", "compare", "cost", "staff", "info"];
+      const seedText = `${industry}|${review}|${new Date().toISOString().slice(0, 10)}`;
+      const seed = [...seedText].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+      return frames[seed % frames.length];
+    }
+
+    function titleIdeas(industry, product, review, points, angle) {
+      const pain = inferPain(review, points);
+      const benefits = inferBenefit(review, points);
+      const firstBenefit = benefits[0];
+      const shortProduct = product.replace("주방고수 ", "");
+      const workTarget = pain === "손목 부담" ? "야채 손질" : pain;
+      const staffPain = pain === "손목 부담" ? "직원 손목" : pain;
+      const all = {
+        question: [
+          `${industry} 사장님들... 양배추 하루 몇 통 쓰세요?`,
+          `${industry} ${workTarget}, 다들 어떻게 하고 계세요?`,
+          `${industry} 사장님들은 ${workTarget} 얼마나 걸리세요?`
+        ],
+        pain: [
+          `${industry}은 손질할 게 너무 많죠..?`,
+          `점심 장사 전 ${workTarget}, 진짜 만만치 않네요`,
+          `${staffPain} 괜찮으세요? 저희도 이 부분이 제일 신경 쓰였습니다`
+        ],
+        story: [
+          `${industry} 사장님들이 써보고 제일 많이 한 말`,
+          `"${firstBenefit}"는 후기가 계속 나오는 이유`,
+          `${industry}에서 써보고 생각보다 반응 좋았던 것`
+        ],
+        curiosity: [
+          `${industry} 사장님이 좋아하는 기계`,
+          `요즘 ${industry}에서 이걸 찾는 이유`,
+          `${shortProduct}, 정말 필요한가요?`
+        ],
+        compare: [
+          `직접 써는 것과 기계 쓰는 것, ${industry}에서는 차이가 큽니다`,
+          `${industry} 양배추 채, 손으로 할 때와 기계로 할 때`,
+          `손질 시간 줄인다는 말, 써보면 체감이 다르긴 합니다`
+        ]
+      };
+
+      const ordered = angle === "auto"
+        ? [...all.question, ...all.pain, ...all.story, ...all.curiosity, ...all.compare]
+        : all[angle] || all.question;
+
+      const extra = [
+        `저만 ${workTarget} 오래 걸리는 거 아니죠..?`,
+        `${industry} 사장님들 이거 믿어도 될까요?`,
+        `양배추 많이 쓰는 매장이라면 한 번은 봐야 합니다`,
+        `후기에서 자주 보이는 말: "시간이 줄었다"`,
+        `${shortProduct}를 찾는 매장들의 공통점`,
+        `이 정도면 ${industry}에는 하나 있어도 되겠다 싶었습니다`
+      ];
+      return [...ordered, ...extra].slice(0, 12);
+    }
+
+    function bodyDraft(industry, product, review, points, tone) {
+      const pain = inferPain(review, points);
+      const benefits = inferBenefit(review, points);
+      const benefitText = benefits.join(", ");
+      const cleanReview = review.trim().replace(/\s+/g, " ");
+      const frame = pickFrame(tone, industry, cleanReview);
+      const workTarget = pain === "손목 부담" ? "야채 손질" : pain;
+      const staffPain = pain === "손목 부담" ? "직원 손목" : pain;
+
+      if (frame === "info") {
+        return `${industry}처럼 야채 손질이 반복되는 매장은 ${pain}이 생각보다 큰 일이 됩니다.\n\n최근 고객 후기들을 보면 ${product}를 쓰고 나서 ${benefitText}는 이야기가 자주 보였습니다.\n\n특히 양배추, 당근, 양파처럼 매일 반복해서 손질하는 재료가 있는 매장이라면 준비 시간을 줄이고 채 굵기를 일정하게 맞추는 데 도움이 될 수 있습니다.\n\n다만 매장마다 재료 크기와 원하는 굵기가 다르니, 실제 사용 전에는 칼날 구성과 손질 방식이 우리 매장에 맞는지 확인해보시는 게 좋습니다.`;
+      }
+
+      if (frame === "story") {
+        return `후기 보다가 ${industry} 사장님들이 공감하실 만한 내용이 있어서 가져왔습니다.\n\n“${cleanReview.slice(0, 80)}${cleanReview.length > 80 ? "..." : ""}”\n\n핵심은 단순히 기계를 하나 샀다는 얘기보다, 매일 반복하던 ${pain}이 줄었다는 점인 것 같습니다.\n\n${product}는 이런 반복 손질이 많은 매장에서 쓰기 좋은 쪽으로 나온 제품이라, 양배추나 야채 손질량이 많은 사장님들은 한 번 비교해보셔도 좋겠습니다.`;
+      }
+
+      if (frame === "question") {
+        return `${industry} 사장님들, ${workTarget} 다들 어떻게 하고 계세요?\n\n후기들을 보다 보면 ${benefitText}는 말이 꽤 자주 나옵니다. 특히 아래 후기처럼요.\n\n“${cleanReview.slice(0, 90)}${cleanReview.length > 90 ? "..." : ""}”\n\n저희가 보기엔 ${product}가 모든 매장에 무조건 맞는 장비라기보다는, 양배추나 야채 손질량이 꾸준히 있는 매장에 더 잘 맞습니다.\n\n다른 사장님들은 아직 직접 손질하시나요, 아니면 장비 도움을 받고 계신가요?`;
+      }
+
+      if (frame === "checklist") {
+        return `${industry}에서 야채 손질 때문에 이런 부분 있으면 한 번 체크해보셔도 좋겠습니다.\n\n1. 점심 준비 전에 손질 시간이 길다\n2. 직원마다 채 굵기가 달라진다\n3. 손목이나 손 다칠까 봐 신경 쓰인다\n4. 양배추, 양파, 당근 같은 재료를 자주 쓴다\n\n실제 후기에서도 “${cleanReview.slice(0, 80)}${cleanReview.length > 80 ? "..." : ""}” 같은 반응이 있었고, ${benefitText}는 이야기가 반복해서 나왔습니다.\n\n${product}는 이런 반복 손질을 줄이는 쪽으로 보면 이해가 쉬운 제품입니다.`;
+      }
+
+      if (frame === "compare") {
+        return `손으로 썰 때랑 기계 도움을 받을 때, 차이가 제일 크게 나는 건 결국 반복 작업인 것 같습니다.\n\n${industry}처럼 매일 비슷한 양을 준비하는 매장은 ${workTarget}이 하루하루 쌓이잖아요.\n\n후기에서도 “${cleanReview.slice(0, 85)}${cleanReview.length > 85 ? "..." : ""}”라는 말이 있었고, 비슷하게 ${benefitText}는 반응이 많았습니다.\n\n칼질이 더 편한 매장도 분명 있지만, 손질량이 많아지는 순간에는 ${product} 같은 장비가 확실히 비교 대상이 되는 것 같습니다.`;
+      }
+
+      if (frame === "cost") {
+        return `${industry} 사장님들은 ${workTarget}에 하루 몇 분 정도 쓰시나요?\n\n10분, 20분은 별거 아닌 것 같아도 매일 반복되면 한 달에는 꽤 큰 시간이 됩니다. 후기에서도 “${cleanReview.slice(0, 80)}${cleanReview.length > 80 ? "..." : ""}”처럼 시간 관련 이야기가 자주 보였습니다.\n\n${product}는 인건비를 무조건 줄여준다기보다, 매일 반복되는 손질 시간을 덜어주는 장비에 가깝습니다.\n\n양배추나 야채를 많이 쓰는 매장이라면 우리 매장 기준으로 하루 몇 분이 줄어들지 계산해보셔도 좋겠습니다.`;
+      }
+
+      if (frame === "staff") {
+        return `요즘은 장비를 볼 때 속도도 중요하지만, 직원들이 덜 힘든지도 같이 보게 되는 것 같습니다.\n\n${industry}에서 ${staffPain}이 계속 쌓이면 사장님도 신경 쓰이잖아요. 실제 후기에도 “${cleanReview.slice(0, 80)}${cleanReview.length > 80 ? "..." : ""}” 같은 말이 있었고, ${benefitText}는 반응이 반복됩니다.\n\n${product}는 그런 반복 손질을 조금 덜어주는 쪽으로 보면 좋습니다.\n\n사장님들 매장에서는 야채 손질 누가 맡아서 하고 계세요?`;
+      }
+
+      return `${industry} 사장님들은 양배추나 야채 손질 때문에 은근히 시간을 많이 쓰시죠.\n\n실제 구매 후기에서도 “${cleanReview.slice(0, 70)}${cleanReview.length > 70 ? "..." : ""}” 같은 이야기가 있었고, 비슷하게 ${benefitText}는 반응이 반복해서 나왔습니다.\n\n${product}는 제품을 대놓고 자랑하기보다, 매장에서 매일 반복되는 손질 일을 줄이는 쪽에 초점이 맞는 장비입니다.\n\n손질량이 많거나 직원 손목 부담이 신경 쓰이는 매장이라면, 우리 매장 작업 방식에 맞는지 한 번 체크해보셔도 좋겠습니다.`;
+    }
+
+    function generate() {
+      const industry = $("industry").value.trim() || "외식업";
+      const product = $("product").value.trim() || "주방고수 양배추 슬라이서";
+      const review = $("review").value.trim();
+      const tone = $("tone").value;
+      const angle = $("angle").value;
+      const points = checkedPoints();
+
+      const titles = titleIdeas(industry, product, review, points, angle);
+      $("titles").innerHTML = titles.map((title, i) => `<li><span class="num">${i + 1}</span><span>${title}</span></li>`).join("");
+      $("draft").textContent = bodyDraft(industry, product, review, points, tone);
+    }
+
+    $("generate").addEventListener("click", generate);
+    $("sample").addEventListener("click", () => {
+      $("review").value = samples[Math.floor(Math.random() * samples.length)];
+      generate();
+    });
+
+    generate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,4427 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>카페 바이럴 원고 생성기</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #111827;
+      --muted: #64748b;
+      --line: #dbe4f0;
+      --blue: #4f63ff;
+      --blue-soft: #eef2ff;
+      --green: #059669;
+      --green-soft: #ecfdf5;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --purple: #7c3aed;
+      --purple-soft: #f5f3ff;
+      --shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .sub, .hint {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hint a {
+      color: var(--blue);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .settings {
+      border-color: #f2ca6b;
+      background: var(--amber-soft);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+
+    .tabs, .chips, .providers {
+      display: grid;
+      gap: 8px;
+    }
+
+    .tabs {
+      grid-template-columns: repeat(5, 1fr);
+      margin-bottom: 18px;
+    }
+
+    .tab, .provider, .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tab strong, .provider strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .tab span, .provider span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tab.active {
+      border-color: var(--blue);
+      background: var(--blue-soft);
+      box-shadow: inset 0 0 0 1px var(--blue);
+    }
+
+    .provider.active {
+      border-color: var(--blue);
+      background: var(--blue-soft);
+      box-shadow: inset 0 0 0 1px var(--blue);
+    }
+
+    .providers {
+      grid-template-columns: repeat(3, 1fr);
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 7px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .compact-textarea {
+      min-height: 88px;
+    }
+
+    .inline-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 9px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .inline-check input {
+      width: auto;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .chips {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .chip input {
+      width: auto;
+      margin: 0;
+    }
+
+    .formula {
+      border-color: #b7d5c6;
+      background: var(--green-soft);
+      color: #064e3b;
+    }
+
+    .formula ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .routine {
+      border-color: #c7d2fe;
+      background: #f8fafc;
+    }
+
+    .routine-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .routine-card {
+      border: 1px solid #dbe4f0;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .routine-card strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .source-tools {
+      border-color: #bae6fd;
+      background: #f0f9ff;
+    }
+
+    .video-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .video-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+      align-items: flex-start;
+      border: 1px solid #dbe4f0;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .video-item input {
+      width: auto;
+      margin-top: 4px;
+    }
+
+    .video-item strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .video-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .youtube-box {
+      border: 1px solid #dbe4f0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      background: #f8fafc;
+    }
+
+    .scene-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .scene-item {
+      display: grid;
+      gap: 4px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .scene-item.selected {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .scene-select {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      color: #14532d;
+    }
+
+    .scene-select input {
+      width: auto;
+      margin: 0;
+    }
+
+    .scene-item img {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      margin-top: 6px;
+    }
+
+    .scene-item a {
+      color: var(--primary);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary {
+      flex: 1;
+      color: #fff;
+      background: var(--purple);
+    }
+
+    .secondary {
+      color: var(--purple);
+      background: var(--purple-soft);
+    }
+
+    .ghost {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 16px;
+    }
+
+    .result-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .title-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .title-list li {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 8px;
+      align-items: start;
+      position: relative;
+      padding: 10px;
+      padding-top: 34px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .title-list li::before {
+      content: "후보";
+      position: absolute;
+      top: 8px;
+      left: 66px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .title-list li:nth-child(1)::before { content: "사연형"; }
+    .title-list li:nth-child(2)::before { content: "업종 질문형"; }
+    .title-list li:nth-child(3)::before { content: "숫자 고충형"; }
+    .title-list li:nth-child(4)::before { content: "반전 후기형"; }
+    .title-list li:nth-child(5)::before { content: "카페 인기글형"; }
+
+    .title-copy {
+      padding: 7px 10px;
+      white-space: nowrap;
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .title-text {
+      min-width: 0;
+    }
+
+    .title-meta {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 8px;
+      max-height: 280px;
+      overflow: auto;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .history-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .history-item small {
+      color: var(--muted);
+    }
+
+    .recommend-box {
+      margin-top: 12px;
+      border: 1px solid #c7d2fe;
+      border-radius: 10px;
+      padding: 12px;
+      background: #eef2ff;
+      font-size: 13px;
+    }
+
+    .recommend-box strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+    }
+
+    .edit-area {
+      margin-top: 16px;
+    }
+
+    .edit-area textarea {
+      min-height: 240px;
+    }
+
+    .save-status {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .num {
+      color: var(--purple);
+      font-weight: 900;
+    }
+
+    .draft {
+      white-space: pre-wrap;
+      min-height: 260px;
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .loading-box {
+      border: 1px solid #c7d2fe;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      margin-right: 8px;
+      border: 2px solid #c7d2fe;
+      border-top-color: var(--purple);
+      border-radius: 999px;
+      vertical-align: -2px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .hidden { display: none; }
+
+    .settings {
+      position: fixed;
+      z-index: 20;
+      top: 72px;
+      left: 50%;
+      width: min(720px, calc(100vw - 28px));
+      transform: translateX(-50%);
+      max-height: calc(100vh - 96px);
+      overflow: auto;
+    }
+
+    .settings::before {
+      content: "";
+      position: fixed;
+      inset: -100vh;
+      z-index: -1;
+      background: rgba(15, 23, 42, 0.32);
+    }
+
+    .title-detail {
+      margin-top: 6px;
+    }
+
+    .title-detail summary {
+      color: var(--blue);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .title-reason {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .image-preview {
+      display: none;
+      margin-top: 10px;
+      max-width: 220px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .image-preview img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .source-analysis-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .source-analysis-panel {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .source-analysis-panel h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .analysis-summary {
+      border-left: 3px solid #111827;
+      padding-left: 10px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .analysis-block {
+      border: 1px solid #e5e7eb;
+      background: #fafafa;
+      padding: 10px;
+      min-height: 92px;
+    }
+
+    .analysis-block strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #2563eb;
+    }
+
+    .analysis-block ul {
+      margin: 0;
+      padding-left: 16px;
+      color: #374151;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .scan-note {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .error {
+      color: #991b1b;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    details.error {
+      white-space: pre-wrap;
+    }
+
+    .progress-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      background: rgba(15, 23, 42, 0.48);
+      padding: 20px;
+    }
+
+    .progress-card {
+      width: min(560px, calc(100vw - 36px));
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 22px 60px rgba(15, 23, 42, 0.25);
+      overflow: hidden;
+    }
+
+    .progress-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+    }
+
+    .progress-close {
+      border: 0;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 28px;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .progress-body {
+      padding: 22px;
+      text-align: center;
+    }
+
+    .progress-ring {
+      width: 38px;
+      height: 38px;
+      margin: 0 auto 12px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #2563eb;
+      border-radius: 999px;
+      animation: spin 0.85s linear infinite;
+    }
+
+    .progress-message {
+      min-height: 42px;
+      font-weight: 900;
+      color: #334155;
+      white-space: pre-line;
+    }
+
+    .progress-track {
+      height: 8px;
+      margin: 14px 0 4px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: 999px;
+      background: #2563eb;
+      transition: width 0.25s ease;
+    }
+
+    .progress-count {
+      min-height: 18px;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .progress-log {
+      height: 150px;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #050505;
+      color: #86efac;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      text-align: left;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .progress-modal.hidden {
+      display: none;
+    }
+
+    /* Daily-operator layout polish */
+    body {
+      background:
+        linear-gradient(180deg, #f8fafc 0, #eef3f8 100%);
+    }
+
+    main {
+      max-width: 1180px;
+      padding-top: 22px;
+    }
+
+    header {
+      align-items: center;
+      padding: 6px 2px 2px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .panel {
+      border-radius: 10px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .source-workspace {
+      padding: 22px;
+      border-color: #cbd5e1;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .source-workspace > h2 {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .source-workspace > .row:first-of-type {
+      margin-top: 6px;
+    }
+
+    label {
+      margin-top: 16px;
+      color: #334155;
+    }
+
+    input, textarea, select {
+      border-radius: 7px;
+      border-color: #cbd5e1;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    #reviewSource {
+      min-height: 180px;
+      line-height: 1.65;
+    }
+
+    .youtube-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-style: dashed;
+      background: #fbfdff;
+    }
+
+    .youtube-box label {
+      margin-top: 0;
+    }
+
+    .actions {
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      min-height: 42px;
+      border-radius: 8px;
+      letter-spacing: 0;
+    }
+
+    .primary {
+      background: #2563eb;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+    }
+
+    .secondary {
+      color: #1d4ed8;
+      background: #eff6ff;
+    }
+
+    .ghost {
+      color: #475569;
+      background: #f1f5f9;
+    }
+
+    .results-workspace {
+      display: grid;
+      grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+      gap: 14px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .result-box {
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+    }
+
+    .result-box h2 {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .title-list {
+      gap: 10px;
+    }
+
+    .title-list li {
+      grid-template-columns: 34px 1fr auto auto;
+      align-items: center;
+      padding: 12px;
+      padding-top: 36px;
+      background: #fff;
+    }
+
+    .title-list li::before {
+      left: 54px;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .title-list .num {
+      color: #1d4ed8;
+      background: #eff6ff;
+    }
+
+    .title-copy {
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .title-select {
+      color: #fff;
+      background: #2563eb;
+    }
+
+    .recommend-box {
+      border-color: #bfdbfe;
+      background: #f8fbff;
+      line-height: 1.65;
+    }
+
+    .recommend-box:empty {
+      display: none;
+    }
+
+    .draft {
+      min-height: 420px;
+      max-height: 680px;
+      overflow: auto;
+      border-color: #dbe4f0;
+      background: #fbfdff;
+      line-height: 1.75;
+    }
+
+    .edit-area {
+      box-shadow: none;
+    }
+
+    .history-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .history-item {
+      background: #fbfdff;
+    }
+
+    .settings {
+      box-shadow: none;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .side-nav {
+      position: sticky;
+      top: 18px;
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #dbe4f0;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+    }
+
+    .side-tab {
+      display: block;
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #334155;
+      background: transparent;
+      text-align: left;
+      box-shadow: none;
+    }
+
+    .side-tab.active {
+      color: #fff;
+      background: #2563eb;
+    }
+
+    .app-view.hidden {
+      display: none;
+    }
+
+    .board-table-wrap {
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .board-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .board-table th,
+    .board-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .board-table th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 800;
+    }
+
+    .board-table td.num-cell,
+    .board-table th.num-cell {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .raw-data-box {
+      margin-top: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f8fafc;
+      overflow: hidden;
+    }
+
+    .raw-data-box summary {
+      cursor: pointer;
+      padding: 12px 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .raw-data-box .board-table-wrap {
+      max-height: 520px;
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-radius: 0;
+    }
+
+    /* Reference-inspired dark operator UI */
+    :root {
+      --bg: #09090b;
+      --panel: #111113;
+      --ink: #fafafa;
+      --muted: #a1a1aa;
+      --line: #27272a;
+      --blue: #fbbf24;
+      --blue-soft: rgba(251, 191, 36, 0.10);
+      --green: #22c55e;
+      --green-soft: rgba(34, 197, 94, 0.10);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.10);
+      --purple: #60a5fa;
+      --purple-soft: rgba(96, 165, 250, 0.10);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+    }
+
+    body {
+      background: #09090b;
+      color: var(--ink);
+      font-family: "Pretendard Variable", Pretendard, "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    main {
+      max-width: 1240px;
+      padding-top: 26px;
+    }
+
+    header {
+      align-items: flex-end;
+      padding: 12px 2px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .sub,
+    .hint {
+      color: var(--muted);
+    }
+
+    .status {
+      color: #e4e4e7;
+    }
+
+    .panel,
+    .source-workspace,
+    .results-workspace,
+    .routine,
+    .formula,
+    .source-tools,
+    .youtube-box,
+    .history-panel {
+      background: var(--panel);
+      border-color: var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .source-workspace {
+      box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.10), var(--shadow);
+    }
+
+    .app-shell {
+      gap: 16px;
+    }
+
+    .side-nav {
+      background: #0f0f11;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .side-tab {
+      color: #a1a1aa;
+      border-radius: 6px;
+      font-weight: 800;
+    }
+
+    .side-tab.active {
+      background: var(--blue);
+      color: #111113;
+    }
+
+    input,
+    textarea,
+    select {
+      background: #0a0a0b;
+      border-color: #3f3f46;
+      color: #fafafa;
+      border-radius: 6px;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #71717a;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.16);
+    }
+
+    label {
+      color: #d4d4d8;
+      letter-spacing: 0;
+    }
+
+    button,
+    .copy-btn {
+      border-radius: 6px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    button:not(.secondary):not(.ghost):not(.side-tab):not(.progress-close):not(.tab):not(.provider) {
+      background: var(--blue);
+      color: #111113;
+      box-shadow: 0 12px 28px rgba(251, 191, 36, 0.14);
+    }
+
+    button.secondary {
+      background: #18181b;
+      color: #f4f4f5;
+      border: 1px solid #3f3f46;
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--blue);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+    }
+
+    .tab,
+    .provider,
+    .chip,
+    .routine-card,
+    .title-list li,
+    .result-box,
+    .scene-item,
+    .video-item,
+    .history-item {
+      background: #0b0b0c;
+      border-color: var(--line);
+      border-radius: 8px;
+      color: #f4f4f5;
+    }
+
+    .tab,
+    .provider {
+      background: #111113;
+      color: #f4f4f5;
+      box-shadow: none;
+    }
+
+    .tab span,
+    .provider span,
+    .routine-card span,
+    .title-reason,
+    .result-box .muted {
+      color: var(--muted);
+    }
+
+    .tab.active,
+    .provider.active,
+    .title-list li.selected,
+    .scene-item.selected {
+      background: var(--blue-soft);
+      border-color: var(--blue);
+      box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.65);
+    }
+
+    .chip input,
+    .inline-check input,
+    .scene-select input {
+      accent-color: var(--blue);
+    }
+
+    .title-index,
+    .title-type {
+      color: var(--blue);
+    }
+
+    .formula {
+      color: #d9f99d;
+      background: rgba(34, 197, 94, 0.08);
+      border-color: rgba(34, 197, 94, 0.30);
+    }
+
+    .routine {
+      background: #0c0c0e;
+    }
+
+    .board-table-wrap,
+    .raw-data-box {
+      background: #0b0b0c;
+      border-color: var(--line);
+      border-radius: 8px;
+    }
+
+    .board-table th {
+      background: #18181b;
+      color: #f4f4f5;
+    }
+
+    .board-table td {
+      color: #e4e4e7;
+      border-color: var(--line);
+    }
+
+    .board-table a {
+      color: #fde68a;
+    }
+
+    .raw-data-box summary {
+      color: #f4f4f5;
+      background: #111113;
+    }
+
+    .progress-card {
+      background: #111113;
+      border: 1px solid var(--line);
+      color: #fff;
+    }
+
+    .progress-head {
+      border-color: var(--line);
+    }
+
+    .progress-message {
+      color: #f4f4f5;
+    }
+
+    .progress-bar {
+      background: var(--blue);
+    }
+
+    .progress-log {
+      border: 1px solid #1f2937;
+      box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.08);
+    }
+
+    /* Light analysis-workbench UI */
+    :root {
+      --bg: #f1f2ed;
+      --panel: #ffffff;
+      --ink: #111111;
+      --muted: #667085;
+      --line: #d9d9d2;
+      --blue: #006c5b;
+      --blue-soft: #e3f1ed;
+      --green: #008060;
+      --green-soft: #e1f1ec;
+      --amber: #ff6b2b;
+      --amber-soft: #fff0e8;
+      --purple: #111111;
+      --purple-soft: #f3f4f0;
+      --shadow: 0 18px 45px rgba(31, 35, 32, 0.08);
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Pretendard Variable", Pretendard, "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    main {
+      max-width: 1500px;
+      padding: 18px 22px 42px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      margin-left: 366px;
+      margin-bottom: 14px;
+      padding: 28px 32px;
+      background: #171d1a;
+      border: 0;
+      border-radius: 0;
+      box-shadow: var(--shadow);
+      color: #ffffff;
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 31px;
+      line-height: 1.18;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    header .sub {
+      color: #f4f7f5;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    header .status {
+      color: #f4f7f5;
+      margin-top: 16px;
+    }
+
+    header .dot {
+      background: #00b386;
+    }
+
+    header .ghost {
+      background: transparent;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow: none;
+    }
+
+    .app-shell {
+      grid-template-columns: 348px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      margin-top: -166px;
+    }
+
+    .app-content {
+      padding-top: 166px;
+    }
+
+    .side-nav {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      top: 18px;
+    }
+
+    .side-nav::before {
+      content: "CAFE VIRAL";
+      display: block;
+      margin-bottom: 16px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .side-tab {
+      background: #f8f8f5;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      color: #222222;
+      padding: 14px 12px;
+      text-align: left;
+      box-shadow: none;
+    }
+
+    .side-tab.active {
+      background: #171d1a;
+      color: #ffffff;
+      border-color: #171d1a;
+    }
+
+    .panel,
+    .source-workspace,
+    .results-workspace,
+    .routine,
+    .formula,
+    .source-tools,
+    .youtube-box,
+    .history-panel,
+    .result-box,
+    .title-list li,
+    .recommend-box,
+    .scene-item,
+    .video-item,
+    .history-item,
+    .raw-data-box {
+      background: #ffffff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .source-workspace,
+    .results-workspace {
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .source-workspace > h2,
+    .panel > h2,
+    h2 {
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.35;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .sub,
+    .hint,
+    .tab span,
+    .provider span,
+    .routine-card span,
+    .title-reason,
+    .result-box .muted {
+      color: var(--muted);
+    }
+
+    label {
+      color: #333333;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    input,
+    textarea,
+    select {
+      background: #fafaf7;
+      color: #111111;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #8a8f8b;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0, 108, 91, 0.12);
+    }
+
+    button,
+    .copy-btn {
+      border-radius: 0;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    button:not(.secondary):not(.ghost):not(.side-tab):not(.progress-close):not(.tab):not(.provider) {
+      background: #171d1a;
+      color: #ffffff;
+      border: 1px solid #171d1a;
+      box-shadow: none;
+    }
+
+    button.secondary {
+      background: #dceee8;
+      color: var(--blue);
+      border: 1px solid #dceee8;
+      box-shadow: none;
+    }
+
+    button.ghost {
+      background: #ffffff;
+      color: #171d1a;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .tab,
+    .provider,
+    .chip,
+    .routine-card {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      color: #111111;
+      box-shadow: none;
+    }
+
+    .tab.active,
+    .provider.active,
+    .title-list li.selected,
+    .scene-item.selected {
+      background: var(--blue-soft);
+      border-color: var(--blue);
+      box-shadow: inset 0 0 0 1px rgba(0, 108, 91, 0.35);
+    }
+
+    .title-index,
+    .title-type {
+      color: var(--blue);
+    }
+
+    .recommend-box {
+      background: #f8f8f5;
+      border-color: var(--line);
+    }
+
+    .manual-title-box {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .manual-title-box input {
+      margin-top: 8px;
+    }
+
+    .formula {
+      background: #f8f8f5;
+      color: #171d1a;
+      border-left: 4px solid var(--blue);
+    }
+
+    .youtube-box,
+    .source-tools,
+    .routine {
+      background: #f8f8f5;
+    }
+
+    .board-table-wrap {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    .board-table th {
+      background: #f1f2ed;
+      color: #333333;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .board-table td {
+      color: #222222;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .board-table a {
+      color: var(--blue);
+    }
+
+    .raw-data-box summary {
+      background: #f8f8f5;
+      color: #222222;
+    }
+
+    .progress-card {
+      background: #ffffff;
+      color: #111111;
+      border: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    .progress-head {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .progress-message {
+      color: #111111;
+    }
+
+    .progress-bar {
+      background: var(--blue);
+    }
+
+    .progress-log {
+      background: #0f1714;
+      color: #8cffc5;
+      border: 1px solid #103d32;
+      border-radius: 0;
+    }
+
+    .error,
+    details.error {
+      background: #fff3f0;
+      color: #9f2a12;
+      border-color: #ffd1c4;
+    }
+
+    .saved-results-button {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 90;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 18px;
+      background: #171d1a;
+      color: #ffffff;
+      border: 1px solid #171d1a;
+      box-shadow: 0 18px 44px rgba(23, 29, 26, 0.18);
+    }
+
+    .saved-results-button .badge {
+      min-width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: var(--amber);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .history-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(241, 242, 237, 0.62);
+      backdrop-filter: blur(1px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .history-drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .history-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 101;
+      width: min(440px, 92vw);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      color: #111111;
+      border-left: 1px solid var(--line);
+      box-shadow: -24px 0 60px rgba(17, 24, 39, 0.18);
+      transform: translateX(104%);
+      transition: transform 0.22s ease;
+    }
+
+    .history-drawer.open {
+      transform: translateX(0);
+    }
+
+    .history-drawer-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 22px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+      color: #111111;
+    }
+
+    .history-drawer-head h2 {
+      color: #111111;
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .history-drawer-head .hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .history-drawer .history-drawer-close {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      background: #ffffff;
+      color: #111111;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .history-drawer-body {
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+      background: #f8f8f5;
+    }
+
+    .drawer-history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    button.drawer-history-item {
+      width: 100%;
+      display: block;
+      padding: 14px;
+      text-align: left;
+      background: #ffffff;
+      color: #111111;
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    button.drawer-history-item:hover {
+      border-color: var(--blue);
+      background: var(--blue-soft);
+      filter: none;
+    }
+
+    .drawer-history-item strong {
+      display: block;
+      margin-bottom: 8px;
+      line-height: 1.35;
+      font-size: 15px;
+    }
+
+    .drawer-history-item small {
+      display: block;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .drawer-history-item p {
+      margin: 10px 0 0;
+      color: #333333;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 920px) {
+      header { margin-left: 0; }
+      header, .results, .results-workspace { display: block; }
+      .tabs, .providers, .chips, .row { grid-template-columns: 1fr; }
+      .result-box + .result-box { margin-top: 14px; }
+      .history-list { grid-template-columns: 1fr; }
+      .title-list li { grid-template-columns: 30px 1fr; }
+      .title-list li button { width: 100%; }
+      .app-shell { display: block; }
+      .side-nav {
+        position: static;
+        grid-template-columns: repeat(2, 1fr);
+        margin-bottom: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>카페 바이럴 원고 생성기</h1>
+        <div class="sub">소스 하나를 넣으면 클릭 받을 제목 5개와 도입이 강한 카페 원고를 만듭니다.</div>
+        <div class="status"><span class="dot"></span><span id="providerStatus">현재: Codex Local (ChatGPT 로그인)</span></div>
+      </div>
+      <button class="ghost" id="toggleSettings">API 키 설정</button>
+    </header>
+
+    <section class="panel settings hidden" id="settingsPanel">
+      <h2>AI API 키 등록 (BYOK)</h2>
+      <div class="hint">키는 이 브라우저의 localStorage에만 저장됩니다. 서버로 따로 저장하지 않습니다.</div>
+      <div class="providers">
+        <label class="provider active" data-provider="codex">
+          <input type="radio" name="provider" value="codex" checked />
+          <strong>Codex Local</strong>
+          <span>ChatGPT Pro 로그인 사용</span>
+        </label>
+        <label class="provider" data-provider="claude">
+          <input type="radio" name="provider" value="claude" />
+          <strong>Anthropic Claude</strong>
+          <span>글쓰기 품질 우선</span>
+        </label>
+        <label class="provider" data-provider="gemini">
+          <input type="radio" name="provider" value="gemini" />
+          <strong>Google Gemini</strong>
+          <span>브라우저 단독 호출에 가장 간단</span>
+        </label>
+        <label class="provider" data-provider="openai">
+          <input type="radio" name="provider" value="openai" />
+          <strong>OpenAI</strong>
+          <span>필요 시 프록시 권장</span>
+        </label>
+      </div>
+      <div class="row">
+        <div>
+          <label for="apiKey">AI API 키</label>
+          <input id="apiKey" type="password" placeholder="Claude: sk-ant-... / Gemini: AIza..." />
+          <div class="hint">
+            <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">Claude API 키 발급</a>
+            ·
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Gemini API 키 발급</a>
+          </div>
+        </div>
+        <div>
+          <label for="model">모델</label>
+          <input id="model" value="gemini-2.0-flash" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="secondary" id="saveKey">키 저장</button>
+        <button class="ghost" id="clearKey">키 삭제</button>
+        <button class="ghost" id="closeSettings" type="button">닫기</button>
+      </div>
+      <div class="hint" id="keyStatus"></div>
+    </section>
+
+    <div class="app-shell">
+      <aside class="side-nav">
+        <button class="side-tab active" type="button" data-view="writer">원고 생성</button>
+        <button class="side-tab" type="button" data-view="board">카페 게시판 분석</button>
+        <button class="side-tab" type="button" data-view="popularTime">인기글 시간대</button>
+      </aside>
+      <div class="app-content">
+    <div id="viewWriter" class="app-view">
+    <section class="panel source-workspace">
+      <h2>소스 넣기</h2>
+      <div class="tabs hidden">
+        <button class="tab active" data-type="review">
+          <strong>후기 기반 글</strong>
+          <span>고객 후기 각색</span>
+        </button>
+        <button class="tab" data-type="popular">
+          <strong>인기글 공식</strong>
+          <span>조회/댓글 패턴</span>
+        </button>
+        <button class="tab" data-type="weekly">
+          <strong>주간 원고</strong>
+          <span>5일치 소재</span>
+        </button>
+        <button class="tab" data-type="rewrite">
+          <strong>직접 다듬기</strong>
+          <span>초안 보정</span>
+        </button>
+        <button class="tab" data-type="analyze">
+          <strong>성과 분석</strong>
+          <span>제목 공식 추출</span>
+        </button>
+      </div>
+
+      <div class="panel formula hidden">
+        <strong>카페 공식</strong>
+        <ul>
+          <li>제목은 제품명보다 업종/고충/질문이 먼저 나와야 합니다.</li>
+          <li>본문은 공감 → 후기/썰 → 해결 지점 → 자연스러운 상품 언급 → 댓글 질문 순서가 기본입니다.</li>
+          <li>매일 같은 프레임을 쓰지 말고 질문형, 후기형, 비교형, 체크리스트형, 시간/비용형을 섞습니다.</li>
+        </ul>
+      </div>
+
+      <div class="panel routine hidden">
+        <h2>주 5회 공장 루틴</h2>
+        <div class="row">
+          <div>
+            <label for="weekday">오늘 올릴 요일</label>
+            <select id="weekday">
+              <option value="auto">오늘 날짜로 자동 선택</option>
+              <option value="mon">월요일 - 공감/댓글 유도</option>
+              <option value="tue">화요일 - 문제 인식</option>
+              <option value="wed">수요일 - 시간절약 계산</option>
+              <option value="thu">목요일 - 장비 선택 기준</option>
+              <option value="fri">금요일 - 후기/사례/홍보</option>
+            </select>
+          </div>
+          <div>
+            <label for="routineMemo">오늘 전략</label>
+            <input id="routineMemo" value="자동 추천" readonly />
+          </div>
+        </div>
+        <div class="actions">
+          <button class="secondary" id="applyRoutine" type="button">오늘 루틴 적용</button>
+        </div>
+        <div class="routine-grid">
+          <div class="routine-card"><strong>월</strong>사장님 공감글<br />제품명 거의 금지</div>
+          <div class="routine-card"><strong>화</strong>문제 인식<br />반복업무/시간 새는 구조</div>
+          <div class="routine-card"><strong>수</strong>시간 계산<br />하루 20분 = 월 약 7시간</div>
+          <div class="routine-card"><strong>목</strong>장비 기준<br />가격보다 회수/세척/안전</div>
+          <div class="routine-card"><strong>금</strong>후기/사례<br />제품 연결과 링크 가능</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="industry">타깃 업종</label>
+          <input id="industry" value="" placeholder="예: 김밥집, 돈까스집, 치킨집, 반찬가게" />
+        </div>
+        <div>
+          <label for="product">본문에 넣을 제품명 (선택)</label>
+          <input id="product" value="" placeholder="예: 주방고수 양배추 슬라이서" />
+          <div class="hint">제목에는 거의 쓰지 않고, 본문 중반 이후에 자연스럽게 연결할 때만 사용합니다.</div>
+        </div>
+      </div>
+
+
+      <label for="promoMemo">홍보/이벤트 안내 메모 (선택)</label>
+      <textarea id="promoMemo" class="compact-textarea" placeholder="비워두면 평소 짧은 안내로 자동 처리합니다. 예: 6월 1일~6일 아사다 회원 3만원 쿠폰 / 댓글에 쿠폰(네이버아이디) 남기면 6월 9일 발급 / 톡톡 링크: ... / 상품 링크: ..."></textarea>
+      <div class="hint">선택지를 늘리지 않고 AI가 자동 판단합니다. 쿠폰/혜택/이벤트 내용이 있으면 짧은 이벤트 안내로 붙입니다.</div>
+      <label>소스 종류</label>
+      <div class="tabs" style="grid-template-columns: repeat(2, 1fr);">
+        <button class="tab active" data-source-type="review" type="button">
+          <strong>네이버 후기 콘텐츠</strong>
+          <span>실제 고객후기 기반</span>
+        </button>
+        <button class="tab" data-source-type="youtube" type="button">
+          <strong>장사 유튜브 최신 콘텐츠</strong>
+          <span>오늘 소재 기반</span>
+        </button>
+      </div>
+
+      <label for="reviewSource">소스 내용</label>
+      <textarea id="reviewSource" placeholder="네이버 후기 또는 장사 유튜브 최신 콘텐츠 제목/요약을 붙여넣으세요."></textarea>
+      <div class="youtube-box">
+        <label for="youtubeUrl">YouTube URL로 소스 만들기 (선택)</label>
+        <input id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
+        <div class="actions">
+          <button class="secondary" id="extractYoutubeSource" type="button">유튜브 대본 소스로 넣기</button>
+          <button class="ghost" id="downloadSelectedScenes" type="button">선택 이미지 다운로드</button>
+        </div>
+        <div id="youtubeExtractStatus" class="hint"></div>
+        <div id="youtubeScenes" class="scene-list"></div>
+      </div>
+      <label for="reviewImage">리뷰 사진 첨부 (선택)</label>
+      <input id="reviewImage" type="file" accept="image/*" />
+      <div class="hint">캡처한 뒤 이 화면에서 Ctrl+V를 눌러도 자동 첨부됩니다.</div>
+      <div class="image-preview" id="imagePreview"><img id="previewImg" alt="첨부 이미지 미리보기" /></div>
+      <div class="source-analysis-actions">
+        <button class="secondary" id="analyzeSource" type="button">소스 분석하기</button>
+        <span class="hint" id="sourceAnalysisStatus">후기와 이미지를 먼저 분석하면 제목 품질이 안정됩니다.</span>
+      </div>
+      <div class="source-analysis-panel hidden" id="sourceAnalysisPanel">
+        <h3>소스 분석 결과</h3>
+        <div class="analysis-summary" id="analysisSummary"></div>
+        <div class="analysis-grid" id="analysisGrid"></div>
+        <div class="scan-note">이 분석 결과는 다음 제목 생성과 원고 생성에 자동 반영됩니다.</div>
+      </div>
+
+      <label for="cafeSource" class="hidden">소스 2. 카페인기글 - 제목/말투 공식</label>
+      <textarea id="cafeSource" class="hidden" placeholder="카페 인기글 제목, 댓글수, 조회수 등을 붙여넣으세요.">토스트·샌드위치 가게 사장님들... 양배추 하루 몇 통 쓰세요?
+분식집 사장님이 좋아하는 기계
+반찬가게는 손질할 게 너무 많죠..?</textarea>
+      <div class="actions hidden">
+        <button class="ghost" id="loadHotVideoFile" type="button">핫비디오 제목 소스 불러오기</button>
+        <input id="hotVideoFile" type="file" accept=".txt,.csv" class="hidden" />
+      </div>
+
+      <label for="youtubeSource" class="hidden">소스 3. 유튜버 최신 콘텐츠 - 오늘의 소재</label>
+      <textarea id="youtubeSource" class="hidden" placeholder="장사/외식업 유튜버의 최신 영상 제목이나 요약을 붙여넣으세요. 예: 매출보다 무서운 건 사장님 시간이 새는 구조"></textarea>
+
+      <div class="panel source-tools hidden">
+        <h2>유튜버 최신 콘텐츠 자동 수집</h2>
+        <div class="hint">채널 ID 또는 @핸들을 한 줄에 하나씩 넣어두면 최신 영상 후보를 불러옵니다. YouTube Data API가 켜진 Google API 키가 필요할 수 있습니다.</div>
+        <label for="youtubeApiKey">YouTube API 키 (비워두면 Gemini 키 사용)</label>
+        <input id="youtubeApiKey" type="password" placeholder="Google API key" />
+        <label for="youtubeChannels">추천 유튜버 채널</label>
+        <textarea id="youtubeChannels" placeholder="@channelhandle 또는 UC로 시작하는 채널 ID를 한 줄에 하나씩 입력">장사 권프로
+배민외식업광장
+휴먼스토리
+30대 자영업자 이야기
+자영업자스토리
+공부하는 사장 / 공사장TV
+백종원 / 백종원의 요리비책
+김사원세끼
+정육왕
+팔도스토리</textarea>
+        <div class="actions">
+          <button class="secondary" id="saveChannels" type="button">채널 저장</button>
+          <button class="ghost" id="fetchVideos" type="button">최신 영상 불러오기</button>
+          <button class="ghost" id="applyVideos" type="button">선택 영상 소재칸에 넣기</button>
+        </div>
+        <div id="videoStatus" class="hint"></div>
+        <div id="videoList" class="video-list"></div>
+      </div>
+
+      <label class="hidden">강조 포인트</label>
+      <div class="chips hidden">
+        <label class="chip"><input type="checkbox" value="AI가 후기와 업종을 보고 강조 포인트 자동 선택" checked /> 알아서 추천</label>
+        <label class="chip"><input type="checkbox" value="시간 단축" /> 시간 단축</label>
+        <label class="chip"><input type="checkbox" value="직원 손목/안전" /> 직원 손목/안전</label>
+        <label class="chip"><input type="checkbox" value="채 굵기 일정" /> 채 굵기 일정</label>
+        <label class="chip"><input type="checkbox" value="대량 손질" /> 대량 손질</label>
+        <label class="chip"><input type="checkbox" value="국내 AS" /> 국내 AS</label>
+        <label class="chip"><input type="checkbox" value="인건비 부담" /> 인건비 부담</label>
+        <label class="chip"><input type="checkbox" value="댓글 유도" /> 댓글 유도</label>
+        <label class="chip"><input type="checkbox" value="광고 티 줄이기" /> 광고 티 줄이기</label>
+      </div>
+
+      <div class="row hidden">
+        <div>
+          <label for="tone">말투</label>
+          <select id="tone">
+            <option>알아서 추천</option>
+            <option>편한 존댓말, 사장님끼리 대화하듯</option>
+            <option>조금 더 가벼운 커뮤니티 말투</option>
+            <option>정보 정리형이지만 딱딱하지 않게</option>
+            <option>후기/사연형으로 자연스럽게</option>
+          </select>
+        </div>
+        <div>
+          <label for="cta">마무리</label>
+          <select id="cta">
+            <option>알아서 추천</option>
+            <option>다른 사장님들은 어떻게 하시는지 질문</option>
+            <option>상품 링크를 하단에 자연스럽게 안내</option>
+            <option>댓글로 경험 공유 요청</option>
+            <option>사진/영상 확인 유도</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="generateTitles">제목 먼저 생성</button>
+        <button class="secondary" id="generateDraftFromTitle">선택 제목으로 원고 생성</button>
+        <button class="ghost" id="generate">한번에 생성</button>
+        <button class="secondary" id="sample">예시 넣기</button>
+      </div>
+      <div id="error" class="error hidden"></div>
+      <details id="debug" class="error hidden">
+        <summary>AI 원문 보기</summary>
+        <pre id="rawOutput"></pre>
+      </details>
+    </section>
+
+    <section class="panel results results-workspace">
+      <div class="result-box">
+        <h2>추천 제목</h2>
+        <ul class="title-list" id="titles"></ul>
+        <div class="recommend-box" id="recommendBox"></div>
+        <div class="manual-title-box">
+          <label for="manualTitle">직접 제목 입력</label>
+          <input id="manualTitle" placeholder="추천 제목이 마음에 안 들면 직접 쓴 제목을 넣으세요." />
+          <div class="hint">이 칸에 제목을 쓰면 '선택 제목으로 원고 생성' 버튼이 직접 입력한 제목을 우선 사용합니다.</div>
+        </div>
+      </div>
+      <div class="result-box">
+        <h2>도입 중심 원고 초안</h2>
+        <div class="draft" id="draft">아직 생성된 원고가 없습니다.</div>
+        <div class="toolbar">
+          <button class="ghost" id="copyDraft">본문 복사</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel edit-area">
+      <h2>생성 기록</h2>
+      <div class="hint">제목/원고가 생성될 때마다 브라우저와 data/generated_posts.jsonl에 저장됩니다. 새로고침 후에도 최근 기록을 다시 불러올 수 있습니다.</div>
+      <div class="history-list" id="generationHistory"></div>
+    </section>
+
+    <section class="panel edit-area">
+      <h2>담당자 수정본 저장</h2>
+      <div class="hint">AI 초안을 담당자가 고친 뒤 저장하면, 나중에 수정 패턴을 분석해서 프롬프트를 개선할 수 있습니다.</div>
+      <label for="editedTitle">최종 제목</label>
+      <input id="editedTitle" placeholder="실제로 카페에 올릴 제목" />
+      <label for="editedDraft">최종 본문</label>
+      <textarea id="editedDraft" placeholder="담당자가 수정한 최종 원고"></textarea>
+      <label for="editNotes">수정 메모 (선택)</label>
+      <input id="editNotes" placeholder="예: 제품명 뒤로 뺌, 첫 문장 자연스럽게 수정" />
+      <div class="actions">
+        <button class="primary" id="saveEditedPost" type="button">수정본 저장</button>
+        <button class="ghost" id="copyEditedDraft" type="button">최종 본문 복사</button>
+        <button class="ghost" id="downloadDocx" type="button">워드 검수본 다운로드</button>
+      </div>
+      <div class="save-status" id="saveStatus"></div>
+    </section>
+    </div>
+
+    <div id="viewBoard" class="app-view hidden">
+      <section class="panel source-workspace">
+        <h2>카페 게시판 분석</h2>
+        <div class="hint">네이버 카페 게시판 목록에서 복사한 텍스트를 붙여넣으면 제목, 댓글수, 작성일, 조회수를 정리합니다. 로그인 권한이 필요한 게시판은 먼저 브라우저에서 목록을 열고 복사해 주세요.</div>
+        <div class="row">
+          <div>
+            <label for="boardUrl">게시판 URL</label>
+            <textarea id="boardUrl" class="compact-textarea" placeholder="https://cafe.naver.com/f-e/cafes/23611966/menus/3108&#10;여러 게시판 URL을 줄바꿈으로 붙여넣어도 됩니다."></textarea>
+          </div>
+          <div>
+            <label for="boardPages">수집 페이지 수</label>
+            <input id="boardPages" type="number" min="1" max="500" value="3" placeholder="예: 5" />
+            <label class="inline-check"><input id="boardAllPages" type="checkbox" /> 전체 페이지 자동</label>
+            <label class="inline-check"><input id="boardIncludeContent" type="checkbox" /> 본문/이미지 URL 포함</label>
+          </div>
+        </div>
+        <label for="boardPaste">게시판 목록 복사 붙여넣기</label>
+        <textarea id="boardPaste" placeholder="카페 게시판 목록에서 제목/댓글수/작성일/조회수가 보이게 드래그 복사한 뒤 붙여넣으세요."></textarea>
+        <div class="actions">
+          <button class="primary" id="crawlBoard" type="button">URL로 자동 수집</button>
+          <button class="secondary" id="parseBoard" type="button">붙여넣은 목록 분석</button>
+          <button class="secondary" id="saveBoardRefs" type="button">제목 레퍼런스로 저장</button>
+          <button class="ghost" id="downloadBoardCsv" type="button">CSV 다운로드</button>
+          <button class="ghost" id="clearBoard" type="button">비우기</button>
+        </div>
+        <div class="save-status" id="boardStatus"></div>
+      </section>
+
+      <section class="panel">
+        <h2>분석 결과</h2>
+        <div class="hint" id="boardSummary">아직 분석된 게시글이 없습니다.</div>
+        <div class="board-table-wrap">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th class="num-cell">댓글</th>
+                <th>작성일</th>
+                <th class="num-cell">조회수</th>
+              </tr>
+            </thead>
+            <tbody id="boardRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div id="viewPopularTime" class="app-view hidden">
+      <section class="panel source-workspace">
+        <h2>인기글 시간대 분석</h2>
+        <div class="hint">네이버가 이미 선정한 현재 인기글을 기준으로 삼고, 같은 기간의 카페 전체글과 비교해서 시간대별 인기글 전환율을 계산합니다. 인기글 안에서 다시 추리는 기능이 아닙니다.</div>
+        <div class="row">
+          <div>
+            <label for="popularCafeUrl">카페 URL 또는 cafeId</label>
+            <input id="popularCafeUrl" value="https://cafe.naver.com/f-e/cafes/23611966/popular" />
+          </div>
+          <div>
+            <label for="popularDays">분석 기간</label>
+            <input id="popularDays" type="number" min="1" max="30" value="7" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="popularMaxPages">전체글 최대 수집 페이지</label>
+            <input id="popularMaxPages" type="number" min="10" max="2000" value="300" />
+          </div>
+          <div>
+            <label>계산 기준</label>
+            <div class="hint">분자: 현재 인기글에 올라온 글. 분모: 같은 기간에 올라온 카페 전체글. 그래서 인기글 URL은 카페 ID를 찾는 기준으로만 사용됩니다.</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="analyzePopularTime" type="button">시간대 분석 실행</button>
+          <button class="ghost" id="downloadPopularTimeCsv" type="button">CSV 다운로드</button>
+          <button class="ghost" id="clearPopularTime" type="button">비우기</button>
+        </div>
+        <div class="save-status" id="popularTimeStatus"></div>
+      </section>
+
+      <section class="panel">
+        <h2>시간대별 결과</h2>
+        <div class="hint" id="popularTimeSummary">아직 분석 결과가 없습니다.</div>
+        <div class="board-table-wrap">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th>시간대</th>
+                <th class="num-cell">전체글</th>
+                <th class="num-cell">인기글</th>
+                <th class="num-cell">전환율</th>
+                <th class="num-cell">평균 조회</th>
+                <th class="num-cell">평균 댓글</th>
+              </tr>
+            </thead>
+            <tbody id="popularTimeRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>기간 내 인기글</h2>
+        <div class="board-table-wrap">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th>작성시간</th>
+                <th class="num-cell">조회</th>
+                <th class="num-cell">댓글</th>
+              </tr>
+            </thead>
+            <tbody id="popularTopRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>수집 데이터 원본</h2>
+        <div class="hint" id="popularRawSummary">분석을 실행하면 네이버에서 실제로 가져온 인기글과 전체글 목록을 그대로 확인할 수 있습니다.</div>
+        <details class="raw-data-box" open>
+          <summary>수집한 인기글 전체 <span id="rawPopularCount">(0)</span></summary>
+          <div class="board-table-wrap">
+            <table class="board-table">
+              <thead>
+                <tr>
+                  <th>제목</th>
+                  <th>작성시간</th>
+                  <th class="num-cell">조회</th>
+                  <th class="num-cell">댓글</th>
+                  <th class="num-cell">좋아요</th>
+                  <th class="num-cell">이미지</th>
+                </tr>
+              </thead>
+              <tbody id="rawPopularRows"></tbody>
+            </table>
+          </div>
+        </details>
+        <details class="raw-data-box">
+          <summary>기간 내 매칭된 인기글 <span id="rawMatchedPopularCount">(0)</span></summary>
+          <div class="board-table-wrap">
+            <table class="board-table">
+              <thead>
+                <tr>
+                  <th>제목</th>
+                  <th>작성시간</th>
+                  <th>게시판</th>
+                  <th class="num-cell">조회</th>
+                  <th class="num-cell">댓글</th>
+                </tr>
+              </thead>
+              <tbody id="rawMatchedPopularRows"></tbody>
+            </table>
+          </div>
+        </details>
+        <details class="raw-data-box">
+          <summary>수집한 전체글 <span id="rawAllCount">(0)</span></summary>
+          <div class="board-table-wrap">
+            <table class="board-table">
+              <thead>
+                <tr>
+                  <th>제목</th>
+                  <th>작성시간</th>
+                  <th>게시판</th>
+                  <th class="num-cell">조회</th>
+                  <th class="num-cell">댓글</th>
+                </tr>
+              </thead>
+              <tbody id="rawAllRows"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="progress-modal hidden" id="progressModal">
+    <div class="progress-card">
+      <div class="progress-head">
+        <span id="progressTitle">유튜브 소스 추출</span>
+        <button class="progress-close" id="progressClose" type="button" aria-label="닫기">×</button>
+      </div>
+      <div class="progress-body">
+        <div class="progress-ring" id="progressRing"></div>
+        <div class="progress-message" id="progressMessage">준비 중...</div>
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="progress-count" id="progressCount"></div>
+        <div class="progress-log" id="progressLog"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="saved-results-button" id="openHistoryDrawer" type="button">
+    원고 저장함 <span class="badge" id="savedResultsCount">0</span>
+  </button>
+
+  <div class="history-drawer-backdrop" id="historyDrawerBackdrop"></div>
+  <aside class="history-drawer" id="historyDrawer" aria-hidden="true">
+    <div class="history-drawer-head">
+      <div>
+        <h2>원고 저장함</h2>
+        <div class="hint">원고 생성 탭에서 만든 제목과 본문만 저장됩니다.</div>
+      </div>
+      <button class="history-drawer-close" id="closeHistoryDrawer" type="button" aria-label="닫기">×</button>
+    </div>
+    <div class="history-drawer-body">
+      <div class="drawer-history-list" id="savedResultsList"></div>
+    </div>
+  </aside>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let currentType = "review";
+    let currentSourceType = "review";
+    let attachedImage = null;
+    let lastGeneration = null;
+    let selectedTitle = "";
+    let progressTimer = null;
+    let boardResults = [];
+    let popularTimeResult = null;
+    let sourceAnalysisResult = null;
+    let sourceAnalysisFingerprint = "";
+    const titleTypeLabels = ["사연형", "업종 질문형", "숫자 고충형", "반전 후기형", "카페 인기글형"];
+    const generationHistoryKey = "cafeGenerationHistory";
+    const boardReferenceKey = "cafeBoardTitleReferences";
+    const popularTimeStorageKey = "cafePopularTimeLastResult";
+
+    const samples = {
+      review: {
+        review: "김밥집 당근채 썰다 손목 나가기 직전 구매했는데 길게 채를 썰 수도 있고 좋아요.",
+        cafe: "토스트·샌드위치 가게 사장님들... 양배추 하루 몇 통 쓰세요?\\n분식집 사장님이 좋아하는 기계\\n반찬가게는 손질할 게 너무 많죠..?",
+        youtube: "요즘 장사 유튜브에서 반복업무 줄이는 게 결국 사장님 시간을 지키는 일이라는 이야기가 많습니다."
+      },
+      popular: {
+        review: "시간이 훨씬 줄었다는 후기가 반복해서 나옵니다.",
+        cafe: "저만 야채 손질 오래 걸리는 거 아니죠..?\\n다들 오픈 전에 제일 시간 잡아먹는 일이 뭐예요?\\n하루 20분이면 한 달에 몇 시간인지 계산해보셨나요?",
+        youtube: "최근 외식업 콘텐츠에서 매출보다 무서운 건 사장님 시간이 계속 새는 구조라는 주제가 나왔습니다."
+      },
+      weekly: {
+        review: "후기 1: 시간이 훨씬 줄었네요.\\n후기 2: 직원들 손 다칠 일이 없어서 좋아요.\\n후기 3: 채 굵기가 일정하게 나와서 음식 퀄리티가 좋아졌습니다.",
+        cafe: "사장님들 오픈 전에 제일 시간 잡아먹는 일이 뭐예요?\\n양배추 손질 하루 20분이면 주 5일 기준 한 달 약 7시간입니다.",
+        youtube: "장사 운영 콘텐츠에서 반복작업을 자동화해야 사장님이 덜 갈린다는 이야기가 나왔습니다."
+      },
+      rewrite: {
+        review: "한식뷔페 사장님들 양배추 슬라이서 좋습니다. 시간이 줄고 편합니다. 구매해보세요.",
+        cafe: "제품명보다 사장님 고충을 먼저 꺼내는 제목들이 반응이 좋았습니다.",
+        youtube: "사장님 시간이 새는 구조를 줄이는 관점으로 다시 써주세요."
+      },
+      analyze: {
+        review: "시간 단축, 직원 손목, 채 굵기 일정 관련 후기가 많습니다.",
+        cafe: "제목 / 댓글 / 조회수\\n토스트·샌드위치 가게 사장님들... 양배추 하루 몇 통 쓰세요? / 1 / 1189\\n분식집 사장님이 좋아하는 기계 / 9 / 1172\\n한식뷔페는 손질할 게 너무 많죠..? / 5 / 420",
+        youtube: "최신 콘텐츠에서는 인건비보다 반복업무 시간 관리가 중요하다는 이야기가 많습니다."
+      }
+    };
+
+    const systemPrompt = `너는 네이버 카페 '아프니까 사장이다' 입점업체 게시글을 만드는 한국어 카피라이터다.
+
+목표:
+- 광고 티를 줄이고, 사장님 커뮤니티에서 클릭과 댓글이 나올 만한 원고를 만든다.
+- 실제 후기에서 확인된 내용만 자연스럽게 각색한다.
+- 제품명으로 제목을 시작하지 않는다.
+
+반응 좋았던 제목 공식:
+- [구체 업종 호출] + [현실 고충 질문]
+- 저만 그런가요?
+- 다들 어떻게 하세요?
+- 하루 몇 통/몇 분/얼마나 걸리세요?
+- 후기에서 반복된 말
+- 직원, 손목, 시간, 인건비, 준비시간, 피크타임 같은 실제 고충
+
+본문 프레임:
+1. 질문형: 사장님들 다들 어떻게 하세요?
+2. 후기/사연형: 후기 보다가 공감돼서 가져왔습니다.
+3. 비교형: 손으로 할 때와 장비 도움 받을 때 차이.
+4. 체크리스트형: 이런 매장이면 한 번 체크.
+5. 시간/비용형: 하루 몇 분이 한 달이면 꽤 큼.
+6. 직원 고충형: 직원 손목/반복작업 부담.
+
+주 5회 운영 전략:
+- 월요일: 사장님 공감글. 조회수/댓글 확보. 제품명은 되도록 쓰지 않는다.
+- 화요일: 장사 운영 문제 인식. 사장님 시간이 새는 구조, 반복업무 고충을 다룬다.
+- 수요일: 시간절약 계산글. 하루 20분이면 주 5일 기준 월 약 7시간이라는 식으로 계산한다.
+- 목요일: 장비 선택 기준글. 가격보다 세척, 안전, 회수기간, 반복작업 감소 기준을 알려준다.
+- 금요일: 후기/사례/이벤트/제품 홍보. 이때만 제품 연결을 조금 더 직접적으로 한다.
+- 주간 비중은 공감 40%, 팁/교육 40%, 직접 홍보 20%다.
+
+금지 표현:
+- 최고의, 완벽한, 무조건, 보장, 대박 보장
+- 만족스러운 경험을 제공합니다
+- 추천드립니다 남발
+- 없는 후기를 실제 고객 발언처럼 꾸미기
+- 과장된 인건비 절감 약속
+- "후기 보다가 가져왔습니다"로 시작하기
+- "후기를 보니 생각하게 됐습니다"처럼 제3자가 전달만 하는 문장
+
+후기 사용 방식:
+- 후기는 글의 주인공이 아니라 근거 자료로만 쓴다.
+- 첫 문장은 반드시 업종 사장님들이 겪는 상황/고충/질문으로 시작한다.
+- 후기 내용은 중간에 "실제로 비슷한 매장을 운영하시는 사장님도..." 정도로 자연스럽게 삽입한다.
+- 후기 원문을 특정 고객의 직접 발언처럼 과하게 꾸미지 않는다.
+
+소스 사용 방식:
+- 고객후기: 제품 신뢰와 실제 사용 근거로만 사용한다.
+- 리뷰 사진: 사진 속 실제 사용 상황, 재료, 현장감, 결과물을 관찰해서 도입부와 근거에 반영한다.
+- 사진에 보이지 않는 성능이나 수치는 지어내지 않는다.
+- 카페인기글/핫비디오/욕구공감 공식: 제목 말투, 질문 방식, 댓글 유도 방식, A/B 제목 구조, 본문 도입 공감 구조 참고용으로만 사용한다.
+- 유튜버 최신 콘텐츠: 오늘 글의 소재/문제의식/도입부 아이디어로 사용한다.
+- 핫비디오 디벨롭 시트가 들어오면 A/B 구조를 외식업 사장님 맥락으로 치환한다.
+- 욕구의 공감 소스가 들어오면 본문 첫 문단을 상황→고민/문제→욕구→사례→유인 흐름으로 만든다.
+- 세 소스를 그대로 짜깁기하지 말고, 유튜버 소재로 시작해서 카페/핫비디오 제목 구조로 풀고, 고객후기를 중간 근거로 넣는다.
+
+출력 규칙:
+- 인사말로 시작하지 마라. "안녕하세요", "회원님들" 같은 문장 금지.
+- "제목 후보" 같은 마크다운 제목을 본문에 넣지 마라.
+- 제목은 내부적으로 10개를 생각하되 최종 출력은 가장 괜찮은 3개만 한다.
+- 3개 중 1개는 best로 추천하고, 추천 이유를 짧게 쓴다.
+- 본문은 반드시 완성된 원고 1개여야 한다.
+- 아래 구분자 형식을 정확히 지켜라.
+- JSON, 마크다운 코드블록, 설명 문장은 쓰지 마라.
+
+출력 형식:
+<<<BEST_TITLE>>>
+추천 제목
+<<<BEST_REASON>>>
+추천 이유
+<<<TITLES>>>
+1. 제목
+2. 제목
+3. 제목
+<<<DRAFT_1_LABEL>>>
+원고
+<<<DRAFT_1>>>
+본문 초안
+<<<CHECKS>>>
+1. 직원이 확인할 점
+2. 직원이 확인할 점
+3. 직원이 확인할 점`;
+
+    function selectedPoints() {
+      return [...document.querySelectorAll(".chip input:checked")].map((el) => el.value);
+    }
+
+    const routineMap = {
+      mon: {
+        type: "사장님 공감글",
+        goal: "조회수와 댓글 확보. 제품명은 되도록 쓰지 않고, 오픈 전 가장 시간 잡아먹는 일/반복업무를 묻는다.",
+        tab: "popular",
+        tone: "편한 존댓말, 사장님끼리 대화하듯",
+        cta: "다른 사장님들은 어떻게 하시는지 질문"
+      },
+      tue: {
+        type: "문제 인식 글",
+        goal: "사장님 시간이 계속 새는 구조를 짚고, 반복업무를 줄여야 한다는 인식을 만든다.",
+        tab: "popular",
+        tone: "조금 더 가벼운 커뮤니티 말투",
+        cta: "댓글로 경험 공유 요청"
+      },
+      wed: {
+        type: "시간절약 계산 글",
+        goal: "하루 10~30분 손질 시간이 주 5일 기준 월 몇 시간인지 계산해서 필요성을 심는다.",
+        tab: "popular",
+        tone: "정보 정리형이지만 딱딱하지 않게",
+        cta: "다른 사장님들은 어떻게 하시는지 질문"
+      },
+      thu: {
+        type: "장비 선택 기준 글",
+        goal: "가격보다 세척, 안전, 회수기간, 반복작업 감소 같은 구매 기준을 알려준다.",
+        tab: "popular",
+        tone: "정보 정리형이지만 딱딱하지 않게",
+        cta: "사진/영상 확인 유도"
+      },
+      fri: {
+        type: "후기/사례/제품 연결 글",
+        goal: "실제 후기와 사례를 바탕으로 제품을 자연스럽게 연결하고 링크/문의로 이어지게 한다.",
+        tab: "review",
+        tone: "후기/사연형으로 자연스럽게",
+        cta: "상품 링크를 하단에 자연스럽게 안내"
+      }
+    };
+
+    function selectedRoutineKey() {
+      const value = $("weekday").value;
+      if (value !== "auto") return value;
+      const day = new Date().getDay();
+      return ["mon", "mon", "tue", "wed", "thu", "fri", "fri"][day] || "mon";
+    }
+
+    function currentRoutine() {
+      return routineMap[selectedRoutineKey()] || routineMap.mon;
+    }
+
+    function makeUserPrompt() {
+      const points = selectedPoints();
+      const mainSource = $("reviewSource").value.trim();
+      const reviewContent = currentSourceType === "review" ? mainSource : "";
+      const youtubeContent = currentSourceType === "youtube" ? mainSource : "";
+      const variationSeed = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const pointGuide = points.some((point) => point.includes("자동 선택"))
+        ? "AI가 입력 자료를 보고 가장 반응 좋을 강조 포인트를 우선 선택하되, 체크된 수동 포인트가 있으면 참고만 해줘."
+        : "체크된 강조 포인트를 중심으로 작성해줘.";
+      const toneGuide = $("tone").value === "알아서 추천"
+        ? "입력 자료와 글 종류에 맞춰 가장 자연스러운 카페 말투를 골라줘."
+        : $("tone").value;
+      const ctaGuide = $("cta").value === "알아서 추천"
+        ? "글 흐름에 맞춰 댓글 질문, 링크 안내, 경험 공유 요청 중 가장 자연스러운 마무리를 골라줘."
+        : $("cta").value;
+      return `글 종류: ${currentType}
+오늘 주 5회 루틴: ${currentRoutine().type}
+오늘 루틴 목표: ${currentRoutine().goal}
+타깃 업종: ${$("industry").value.trim() || "미입력"}
+상품/서비스: ${$("product").value.trim() || "미입력"}
+소스 종류: ${currentSourceType === "review" ? "네이버 후기 콘텐츠" : "장사 유튜브 최신 콘텐츠"}
+이번 생성 ID: ${variationSeed}
+
+소스 1. 고객후기:
+${reviewContent}
+
+소스 2. 카페인기글:
+${$("cafeSource").value.trim()}
+
+소스 3. 유튜버 최신 콘텐츠:
+${youtubeContent || $("youtubeSource").value.trim()}
+
+강조 포인트: ${points.join(", ")}
+강조 포인트 선택 방식: ${pointGuide}
+말투: ${toneGuide}
+마무리 방식: ${ctaGuide}
+
+분량:
+- 제목 3개
+- 본문 초안 1개, 공백 포함 700~1500자
+- 직원 확인점 3개
+
+요청:
+0. 먼저 입력 소스를 분석해서 타깃의 상황, 고충, 욕구, 믿을 근거, 제목 훅을 내부적으로 정리해.
+1. 분석 결과를 바탕으로 카페 인기글 공식에 맞는 제목 후보를 내부적으로 10개 생각한 뒤, 가장 괜찮은 3개만 출력해줘.
+2. 그중 가장 추천하는 제목 1개와 추천 이유를 따로 써줘.
+3. 본문 초안 1개를 완성도 있게 써줘.
+4. 본문은 너무 광고처럼 보이지 않게, 첫 문장은 사장님 고충/질문/썰로 시작해줘.
+5. 상품명은 본문 중반 이후에 자연스럽게 1~2회만 언급해줘.
+6. 마지막에는 댓글을 부르는 질문을 넣어줘.
+7. "후기 보다가", "후기를 보니"로 시작하지 말고, 후기 전달글처럼 쓰지 마.
+8. 오늘 루틴 목표를 최우선으로 반영해줘.
+9. 본문 첫 3줄은 가장 중요하다. 첫 3줄만 읽어도 사장님이 자기 이야기라고 느끼게 써줘.
+10. 본문은 반드시 공백 포함 700~1500자 사이로 써줘.
+11. 이전 출력과 같은 상투 문장으로 시작하지 말고, 이번 생성 ID를 기준으로 새 표현을 선택해.
+12. 반드시 지정된 구분자 형식으로만 반환해줘.`;
+    }
+
+    function selectedProvider() {
+      return document.querySelector('input[name="provider"]:checked')?.value || "codex";
+    }
+
+    async function callAI(prompt) {
+      const provider = selectedProvider();
+      if (provider === "codex") return callCodexLocal();
+      if (provider === "claude") return callClaude(prompt);
+      return callGemini(prompt);
+    }
+
+    function codexPayload(extra = {}) {
+      return {
+        sourceType: currentSourceType === "review" ? "네이버 후기 콘텐츠" : "장사 유튜브 최신 콘텐츠",
+        industry: $("industry").value.trim(),
+        product: $("product").value.trim(),
+        promoMemo: $("promoMemo").value.trim(),
+        source: $("reviewSource").value.trim(),
+        image: attachedImage,
+        sourceAnalysis: sourceAnalysisForPrompt(),
+        ...extra
+      };
+    }
+
+    async function postCodex(endpoint, payload = {}) {
+      const response = await fetch(`http://127.0.0.1:8787/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(codexPayload(payload))
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Codex Local 호출 실패: ${response.status} ${text.slice(0, 240)}`);
+      }
+      return response.json();
+    }
+    function listForPrompt(label, values) {
+      const list = Array.isArray(values) ? values.filter(Boolean) : [];
+      return `${label}: ${list.length ? list.join(", ") : "없음"}`;
+    }
+
+    function currentSourceFingerprint() {
+      const source = $("reviewSource")?.value.trim() || "";
+      const imageKey = attachedImage?.base64
+        ? `${attachedImage.mimeType || "image"}:${attachedImage.base64.length}:${attachedImage.base64.slice(0, 80)}`
+        : "";
+      return JSON.stringify({ source, imageKey });
+    }
+
+    function currentSourceFingerprint() {
+      const source = $("reviewSource")?.value.trim() || "";
+      const imageKey = attachedImage?.base64
+        ? `${attachedImage.mimeType || "image"}:${attachedImage.base64.length}:${attachedImage.base64.slice(0, 80)}`
+        : "";
+      return JSON.stringify({ source, imageKey });
+    }
+
+    function sourceAnalysisForPrompt() {
+      if (!sourceAnalysisResult) return "";
+      if (sourceAnalysisFingerprint !== currentSourceFingerprint()) return "";
+      return [
+        `한 줄 요약: ${sourceAnalysisResult.summary || ""}`,
+        listForPrompt("추출 원문", sourceAnalysisResult.extractedText),
+        listForPrompt("주요 키워드", sourceAnalysisResult.coreKeywords),
+        listForPrompt("원문 핵심", sourceAnalysisResult.originalCore),
+        listForPrompt("검증된 사실", sourceAnalysisResult.verifiedFacts),
+        listForPrompt("이미지/영상 단서", sourceAnalysisResult.imageClues),
+        listForPrompt("감정 핵심", sourceAnalysisResult.emotionCore),
+        listForPrompt("제품 연결 포인트", sourceAnalysisResult.productBridge),
+        listForPrompt("제목에 꼭 살릴 단어", sourceAnalysisResult.titleMustUse),
+        listForPrompt("제목에 써도 안전한 사실", sourceAnalysisResult.titleSafeFacts),
+        listForPrompt("제목에서 피할 방향", sourceAnalysisResult.titleAvoid),
+        listForPrompt("주의할 오해", sourceAnalysisResult.cautionFlags)
+      ].join("\n");
+    }
+
+    function renderAnalysisList(label, values) {
+      const items = (Array.isArray(values) ? values : []).filter(Boolean).slice(0, 6);
+      return `
+        <div class="analysis-block">
+          <strong>${escapeHtml(label)}</strong>
+          <ul>${items.length ? items.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>분석된 내용 없음</li>"}</ul>
+        </div>
+      `;
+    }
+
+    function renderSourceAnalysis(data) {
+      sourceAnalysisResult = data;
+      sourceAnalysisFingerprint = currentSourceFingerprint();
+      $("sourceAnalysisPanel").classList.remove("hidden");
+      $("analysisSummary").textContent = data.summary || "소스 핵심을 분석했습니다.";
+      $("analysisGrid").innerHTML = [
+        renderAnalysisList("추출 원문", data.extractedText),
+        renderAnalysisList("주요 키워드", data.coreKeywords),
+        renderAnalysisList("원문 핵심", data.originalCore),
+        renderAnalysisList("검증된 사실", data.verifiedFacts),
+        renderAnalysisList("이미지/영상 단서", data.imageClues),
+        renderAnalysisList("감정 핵심", data.emotionCore),
+        renderAnalysisList("제품 연결 포인트", data.productBridge),
+        renderAnalysisList("제목에 꼭 살릴 단어", data.titleMustUse),
+        renderAnalysisList("제목에 써도 안전한 사실", data.titleSafeFacts),
+        renderAnalysisList("제목에서 피할 방향", data.titleAvoid),
+        renderAnalysisList("주의할 오해", data.cautionFlags)
+      ].join("");
+      $("sourceAnalysisStatus").textContent = "분석 완료. 다음 제목 생성에 자동 반영됩니다.";
+    }
+
+    function clearSourceAnalysis(message = "소스가 바뀌면 다시 분석해 주세요.") {
+      sourceAnalysisResult = null;
+      sourceAnalysisFingerprint = "";
+      if ($("sourceAnalysisPanel")) $("sourceAnalysisPanel").classList.add("hidden");
+      if ($("sourceAnalysisStatus")) $("sourceAnalysisStatus").textContent = message;
+    }
+
+    function startSourceAnalysisProgress() {
+      const steps = attachedImage
+        ? [
+            "첨부 이미지의 글자를 먼저 읽는 중...",
+            "OCR 원문과 사진 속 장면을 분리하는 중...",
+            "후기 원문에서 숫자, 기간, 사람 반응을 검증하는 중...",
+            "비교/전후관계가 뒤집히지 않았는지 확인하는 중...",
+            "제목에 살릴 단어와 피할 방향을 정리하는 중..."
+          ]
+        : [
+            "후기 원문을 읽는 중...",
+            "숫자, 기간, 반복 고충을 찾는 중...",
+            "사람 반응과 감정핵심을 추출하는 중...",
+            "비교/전후관계가 뒤집히지 않았는지 확인하는 중...",
+            "제목에 살릴 단어와 피할 방향을 정리하는 중..."
+          ];
+      openProgress("소스 분석");
+      appendProgressLog(attachedImage ? "image scanner initialized" : "text scanner initialized");
+      appendProgressLog(`소스 길이: ${$("reviewSource").value.trim().length.toLocaleString("ko-KR")}자`);
+      if (attachedImage) appendProgressLog("첨부 이미지 감지: OCR 원문을 먼저 고정한 뒤 이미지 단서를 분리합니다.");
+      let index = 0;
+      setProgress(1, steps.length, steps[0]);
+      progressTimer = setInterval(() => {
+        index = Math.min(index + 1, steps.length - 1);
+        setProgress(index + 1, steps.length, steps[index]);
+        if (index >= steps.length - 1 && progressTimer) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+        }
+      }, 900);
+    }
+
+    async function analyzeSource() {
+      const source = $("reviewSource").value.trim();
+      if (!source && !attachedImage) {
+        $("sourceAnalysisStatus").textContent = "분석할 소스 내용이나 이미지를 먼저 넣어 주세요.";
+        return;
+      }
+      $("analyzeSource").disabled = true;
+      $("analyzeSource").textContent = "분석 중...";
+      $("sourceAnalysisStatus").textContent = "소스와 이미지를 분석하는 중입니다.";
+      startSourceAnalysisProgress();
+      try {
+        const data = await postCodex("analyze-source-codex");
+        if (progressTimer) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+        }
+        setProgress(5, 5, "분석 완료", "원문추출/검증사실/이미지단서 정리 완료");
+        $("progressRing").style.display = "none";
+        renderSourceAnalysis(data);
+        setTimeout(() => closeProgress(), 450);
+      } catch (error) {
+        if (progressTimer) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+        }
+        $("progressRing").style.display = "none";
+        $("progressMessage").textContent = "분석에 실패했습니다.";
+        sourceAnalysisResult = null;
+        sourceAnalysisFingerprint = "";
+        if ($("sourceAnalysisPanel")) $("sourceAnalysisPanel").classList.add("hidden");
+        appendProgressLog(`오류: ${error.message}`);
+        $("sourceAnalysisStatus").textContent = `소스 분석 실패: ${error.message}`;
+      } finally {
+        $("analyzeSource").disabled = false;
+        $("analyzeSource").textContent = "소스 분석하기";
+      }
+    }
+
+    async function callCodexLocal() {
+      const data = await postCodex("generate-codex");
+      return `<<<BEST_TITLE>>>
+${data.bestTitle || ""}
+<<<BEST_REASON>>>
+${data.bestReason || ""}
+<<<TITLES>>>
+${(data.titles || []).map((title, index) => `${index + 1}. ${title}`).join("\n")}
+<<<DRAFT_1_LABEL>>>
+원고
+<<<DRAFT_1>>>
+${data.draft || ""}
+<<<CHECKS>>>
+${(data.checks || []).map((check, index) => `${index + 1}. ${check}`).join("\n")}`;
+    }
+
+    async function callCodexTitlesOnly() {
+      return postCodex("generate-codex-titles");
+    }
+
+    async function callCodexDraftOnly(title) {
+      return postCodex("generate-codex-draft", { selectedTitle: title });
+    }
+
+    async function callGemini(prompt) {
+      const key = $("apiKey").value.trim();
+      const model = $("model").value.trim() || "gemini-2.5-flash";
+      if (!key) throw new Error("Gemini API 키를 먼저 입력하고 저장해 주세요.");
+      const parts = [{ text: `${systemPrompt}\n\n${prompt}` }];
+      if (attachedImage) {
+        parts.push({
+          inline_data: {
+            mime_type: attachedImage.mimeType,
+            data: attachedImage.base64
+          }
+        });
+        parts.push({
+          text: "첨부된 리뷰 사진을 보고, 사진 속 현장감과 실제 사용 상황을 원고 도입부와 근거에 자연스럽게 반영해줘."
+        });
+      }
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": key
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts
+            }
+          ],
+          generationConfig: {
+            temperature: 0.85,
+            topP: 0.95,
+            maxOutputTokens: 3000
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Gemini 호출 실패: ${response.status} ${text.slice(0, 240)}`);
+      }
+
+      const data = await response.json();
+      return data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("\n").trim() || "";
+    }
+
+    async function callClaude(prompt) {
+      const key = $("apiKey").value.trim();
+      const model = $("model").value.trim() || "claude-sonnet-4-20250514";
+      if (!key) throw new Error("Claude API 키를 먼저 입력하고 저장해 주세요.");
+      const content = [{ type: "text", text: prompt }];
+      if (attachedImage) {
+        content.push({
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: attachedImage.mimeType,
+            data: attachedImage.base64
+          }
+        });
+      }
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 3000,
+          temperature: 0.85,
+          system: systemPrompt,
+          messages: [{ role: "user", content }]
+        })
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Claude 호출 실패: ${response.status} ${text.slice(0, 240)}`);
+      }
+
+      const data = await response.json();
+      return data.content?.map((part) => part.text || "").join("\n").trim() || "";
+    }
+
+    function fallbackDraft() {
+      const industry = $("industry").value.trim() || "입력한 업종";
+      const product = $("product").value.trim() || "입력한 상품/서비스";
+      const review = $("reviewSource").value.trim().replace(/\s+/g, " ");
+      const youtube = $("youtubeSource").value.trim().replace(/\s+/g, " ");
+      const source = review || youtube || "시간이 줄었다는 후기가 있었습니다.";
+      const titlePool = [
+        `${industry} 사장님들... 양배추 하루 몇 통 쓰세요?`,
+        `${industry} 야채 손질, 다들 어떻게 하고 계세요?`,
+        `저만 ${industry} 야채 손질 오래 걸리는 거 아니죠..?`,
+        `${industry} 점심 준비 전에 손질 시간 얼마나 걸리세요?`,
+        `${industry} 직원 손목 괜찮으세요? 매일 반복이면 꽤 큽니다`,
+        `양배추 많이 쓰는 ${industry}, 손질 시간 계산해보셨나요?`,
+        `${industry} 오픈 전에 제일 시간 잡아먹는 일이 뭔가요?`,
+        `손질 시간 줄었다는 후기, ${industry}에도 해당될까요?`,
+        `${industry}에서 장비 들일 때 제일 먼저 봐야 할 기준`,
+        `매일 20분 손질이면 한 달에 몇 시간인지 아세요?`
+      ];
+      const offset = Math.floor(Math.random() * titlePool.length);
+      const titles = [0, 1, 2].map((step) => titlePool[(offset + step) % titlePool.length]);
+      const openings = [
+        `${industry} 사장님들, 오픈 전에 제일 오래 잡아먹는 일이 뭔가요?`,
+        `${industry}처럼 피크타임이 뚜렷한 매장은 준비 시간이 진짜 빡빡하잖아요.`,
+        `양배추나 야채 손질이 별일 아닌 것 같아도 매일 반복되면 꽤 큽니다.`,
+        `${industry}에서 직원 한두 명이 손질에 매달리는 시간이 생각보다 길더라고요.`
+      ];
+      const opening = openings[Math.floor(Math.random() * openings.length)];
+      const draft = `[질문형]
+${opening}
+
+식수 많은 매장이나 피크타임이 뚜렷한 매장은 양배추, 대파, 고추 같은 재료 준비가 생각보다 큰 일이잖아요.
+칼질 조금 하는 수준이 아니라 직원 한두 명이 오전 시간을 거의 손질에 쓰는 경우도 있고요.
+
+실제로 비슷한 매장을 운영하시는 사장님도 "${source.slice(0, 90)}${source.length > 90 ? "..." : ""}"라는 이야기를 해주셨습니다.
+
+이 정도면 제품을 하나 더 사는 문제가 아니라, 매일 반복되는 손질 시간을 얼마나 줄일 수 있느냐의 문제에 가까운 것 같습니다.
+
+${product}는 양배추나 야채 손질량이 많은 매장에서 그런 반복 작업을 덜어주는 쪽으로 보면 이해가 쉽습니다.
+
+다른 사장님들은 아직 직접 손질하시나요, 아니면 장비 도움을 받고 계신가요?
+
+---
+
+[시간/비용형]
+야채 손질에 하루 10분, 20분 쓰는 건 별거 아닌 것 같아도 매일 반복되면 꽤 큽니다.
+
+특히 ${industry}처럼 준비 시간이 정해져 있는 매장은 피크타임 전에 손질이 밀리면 계속 신경 쓰이더라고요.
+
+실제로 사용하신 사장님 후기에서도 "${source.slice(0, 90)}${source.length > 90 ? "..." : ""}" 같은 이야기가 있었고, 결국 포인트는 손질 시간을 얼마나 줄이느냐인 것 같습니다.
+
+${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 만한 장비입니다.
+
+사장님들 매장에서는 야채 손질에 하루 몇 분 정도 쓰세요?`;
+      return { titles, draft };
+    }
+
+    function section(text, start, end) {
+      const startIndex = text.indexOf(start);
+      if (startIndex === -1) return "";
+      const bodyStart = startIndex + start.length;
+      const endIndex = end ? text.indexOf(end, bodyStart) : -1;
+      return text.slice(bodyStart, endIndex === -1 ? text.length : endIndex).trim();
+    }
+
+    function parseAiResult(text) {
+      const bestTitle = section(text, "<<<BEST_TITLE>>>", "<<<BEST_REASON>>>");
+      const bestReason = section(text, "<<<BEST_REASON>>>", "<<<TITLES>>>");
+      const titleBlock = section(text, "<<<TITLES>>>", "<<<DRAFT_1_LABEL>>>");
+      const label1 = section(text, "<<<DRAFT_1_LABEL>>>", "<<<DRAFT_1>>>") || "초안";
+      const draft1 = section(text, "<<<DRAFT_1>>>", "<<<CHECKS>>>");
+      const checksBlock = section(text, "<<<CHECKS>>>", "");
+
+      const titles = titleBlock
+        .split("\n")
+        .map((line) => line.trim().replace(/^\d+[\.\)]\s*/, "").replace(/^[-*]\s*/, ""))
+        .filter((title) => title.length > 8 && title.length < 90)
+        .slice(0, 5);
+
+      if (titles.length < 2 && bestTitle.trim()) {
+        titles.unshift(bestTitle.trim());
+      }
+
+      if (titles.length < 1) {
+        return parseLooseResult(text);
+      }
+
+      if (draft1.length < 40) {
+        return parseLooseResult(text);
+      }
+
+      if (titles.length < 2) {
+        return parseLooseResult(text);
+      }
+
+      const checkText = checksBlock
+        ? `\n\n직원이 확인할 점\n${checksBlock}`
+        : "";
+
+      const draft1Text = draft1.trim().length >= 120
+        ? draft1.trim()
+        : draft1.trim();
+      return {
+        titles: decorateTitles(bestTitle, bestReason, titles),
+        draft: `[${label1}]\n${draft1Text}${checkText}`
+      };
+    }
+
+    function decorateTitles(bestTitle, bestReason, titles) {
+      const cleanBest = bestTitle.trim();
+      const cleanReason = bestReason.trim();
+      const ordered = cleanBest
+        ? [cleanBest, ...titles.filter((title) => title !== cleanBest)]
+        : titles;
+      return ordered.slice(0, 5).map((title, index) => {
+        if (index === 0 && cleanReason) return `추천: ${title}\n이유: ${cleanReason}`;
+        if (index === 0) return `추천: ${title}`;
+        return title;
+      });
+    }
+
+    function parseLooseResult(text) {
+      const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+      const blocked = /^(제목|제목 후보|본문|본문 초안|초안|직원이 확인|확인할 점|```|#+)/;
+      const titles = [];
+
+      for (const line of lines) {
+        const candidate = line
+          .replace(/^[-*]\s*/, "")
+          .replace(/^\d+[\.\)]\s*/, "")
+          .replace(/^["'“”]+|["'“”]+$/g, "")
+          .trim();
+
+        if (
+          candidate.length >= 10 &&
+          candidate.length <= 80 &&
+          !blocked.test(candidate) &&
+          /[?？]|사장님|매장|손질|양배추|직원|시간|후기|이유|어떻게|얼마나|다들/.test(candidate)
+        ) {
+          titles.push(candidate);
+        }
+        if (titles.length >= 5) break;
+      }
+
+      const bodyStartIndex = lines.findIndex((line) => /본문|초안|DRAFT|프레임/.test(line));
+      const bodyLines = bodyStartIndex >= 0 ? lines.slice(bodyStartIndex + 1) : lines.slice(Math.min(lines.length, 12));
+      const body = bodyLines
+        .filter((line) => !/^(\d+[\.\)]\s*)/.test(line) || line.length > 90)
+        .join("\n")
+        .replace(/```/g, "")
+        .trim();
+
+      if (titles.length < 2 || body.length < 160) {
+        throw new Error("AI 응답이 너무 짧거나 형식이 깨졌습니다.");
+      }
+
+      const fallbackTitles = fallbackDraft().titles;
+      return {
+        titles: decorateTitles("", "", [...titles, ...fallbackTitles].slice(0, 5)),
+        draft: body
+      };
+    }
+
+    function titleParts(rawTitle) {
+      const parts = String(rawTitle || "").split(/\n(?:이유|\?댁쑀):/);
+      return {
+        title: parts[0].replace(/^(추천|異붿쿇):\s*/, "").trim(),
+        reason: parts[1]?.trim() || ""
+      };
+    }
+
+    function getStoredHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(generationHistoryKey) || "[]");
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function storeGenerationHistory(record) {
+      if (!record || !Array.isArray(record.titles) || !record.titles.length) return;
+      const normalized = {
+        savedAt: new Date().toISOString(),
+        ...record,
+        titles: record.titles.map((title) => titleParts(title).title).filter(Boolean)
+      };
+      const history = [normalized, ...getStoredHistory()].slice(0, 50);
+      localStorage.setItem(generationHistoryKey, JSON.stringify(history));
+      renderGenerationHistory();
+      fetch("http://127.0.0.1:8787/save-generation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(normalized)
+      }).catch(() => {});
+    }
+
+    function renderGenerationHistory() {
+      const box = $("generationHistory");
+      if (!box) return;
+      const history = getStoredHistory();
+      if (!history.length) {
+        box.innerHTML = `<div class="hint">아직 저장된 생성 기록이 없습니다.</div>`;
+        return;
+      }
+      box.innerHTML = history.slice(0, 20).map((item, index) => {
+        const title = item.recommendedTitle || item.titles?.[0] || "제목 없음";
+        const date = new Date(item.savedAt || Date.now());
+        const when = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+        return `<div class="history-item">
+          <div>
+            <strong>${escapeHtml(title)}</strong>
+            <small>${escapeHtml(when)} · ${escapeHtml(item.industry || "업종 미입력")} · 제목 ${item.titles?.length || 0}개</small>
+          </div>
+          <button class="title-copy history-load" type="button" data-history-index="${index}">불러오기</button>
+        </div>`;
+      }).join("");
+      document.querySelectorAll(".history-load").forEach((button) => {
+        button.addEventListener("click", () => {
+          const item = getStoredHistory()[Number(button.dataset.historyIndex)];
+          if (!item) return;
+          selectedTitle = item.recommendedTitle || item.titles?.[0] || "";
+          renderResult({
+            titles: decorateTitles(item.recommendedTitle || "", item.recommendedReason || "", item.titles || []),
+            draft: item.draft || ""
+          });
+          if (item.industry) $("industry").value = item.industry;
+          if (item.product) $("product").value = item.product;
+          if (item.promoMemo) $("promoMemo").value = item.promoMemo;
+          if (item.source) $("reviewSource").value = item.source;
+        });
+      });
+    }
+
+    function restoreGeneration(item) {
+      if (!item) return;
+      selectedTitle = item.recommendedTitle || item.titles?.[0] || "";
+      renderResult({
+        titles: decorateTitles(item.recommendedTitle || "", item.recommendedReason || "", item.titles || []),
+        draft: item.draft || ""
+      }, { skipStore: true });
+      if (item.industry) $("industry").value = item.industry;
+      if (item.product) $("product").value = item.product;
+      if (item.promoMemo) $("promoMemo").value = item.promoMemo;
+      if (item.source) $("reviewSource").value = item.source;
+      if (selectedTitle) $("editedTitle").value = selectedTitle;
+      if (item.draft) $("editedDraft").value = item.draft;
+      lastGeneration = { ...item };
+      closeHistoryDrawer();
+      const resultArea = document.querySelector(".results-workspace");
+      if (resultArea) resultArea.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function historyItemHtml(item, index, buttonClass) {
+      const title = item.recommendedTitle || item.titles?.[0] || "제목 없음";
+      const date = new Date(item.savedAt || Date.now());
+      const when = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+      const sourceLabel = item.sourceType === "youtube" ? "유튜브" : item.sourceType === "review" ? "후기" : (item.sourceType || "소스");
+      const preview = String(item.draft || "").replace(/\s+/g, " ").slice(0, 92);
+      return `<button class="${buttonClass}" type="button" data-history-index="${index}">
+        <strong>${escapeHtml(title)}</strong>
+        <small>${escapeHtml(when)} · ${escapeHtml(item.industry || "업종 미입력")} · ${escapeHtml(sourceLabel)} · 제목 ${item.titles?.length || 0}개</small>
+        ${preview ? `<p>${escapeHtml(preview)}${preview.length >= 92 ? "..." : ""}</p>` : ""}
+      </button>`;
+    }
+
+    function bindHistoryRestoreButtons() {
+      document.querySelectorAll(".history-restore").forEach((button) => {
+        button.addEventListener("click", () => {
+          const item = getStoredHistory()[Number(button.dataset.historyIndex)];
+          restoreGeneration(item);
+        });
+      });
+    }
+
+    function renderGenerationHistory() {
+      const history = getStoredHistory();
+      if ($("savedResultsCount")) $("savedResultsCount").textContent = String(history.length);
+
+      if ($("savedResultsList")) {
+        $("savedResultsList").innerHTML = history.length
+          ? history.slice(0, 50).map((item, index) => historyItemHtml(item, index, "drawer-history-item history-restore")).join("")
+          : `<div class="hint">아직 저장된 결과가 없습니다.</div>`;
+      }
+
+      const box = $("generationHistory");
+      if (box) {
+        box.innerHTML = history.length
+          ? history.slice(0, 10).map((item, index) => `
+            <div class="history-item">
+              <div>
+                <strong>${escapeHtml(item.recommendedTitle || item.titles?.[0] || "제목 없음")}</strong>
+                <small>${escapeHtml(item.industry || "업종 미입력")} · 제목 ${item.titles?.length || 0}개</small>
+              </div>
+              <button class="title-copy history-restore" type="button" data-history-index="${index}">불러오기</button>
+            </div>
+          `).join("")
+          : `<div class="hint">아직 저장된 생성 기록이 없습니다.</div>`;
+      }
+      bindHistoryRestoreButtons();
+    }
+
+    function openHistoryDrawer() {
+      renderGenerationHistory();
+      $("historyDrawer")?.classList.add("open");
+      $("historyDrawerBackdrop")?.classList.add("open");
+      if ($("historyDrawer")) $("historyDrawer").setAttribute("aria-hidden", "false");
+    }
+
+    function closeHistoryDrawer() {
+      $("historyDrawer")?.classList.remove("open");
+      $("historyDrawerBackdrop")?.classList.remove("open");
+      if ($("historyDrawer")) $("historyDrawer").setAttribute("aria-hidden", "true");
+    }
+
+    function renderTitleList(result) {
+      let recommendedTitle = "";
+      let recommendedReason = "";
+      $("titles").innerHTML = (result.titles || []).map((title, index) => {
+        const parts = String(title).split("\n이유:");
+        const titleText = parts[0].replace(/^추천:\s*/, "").trim();
+        const reason = parts[1]?.trim();
+        if (index === 0) {
+          recommendedTitle = titleText;
+          recommendedReason = reason || "가장 구체적인 타깃과 고충이 들어간 제목입니다.";
+        }
+        const isSelected = selectedTitle && selectedTitle === titleText;
+        return `<li>
+          <span class="num">${index + 1}</span>
+          <span>${escapeHtml(titleText)}</span>
+          <button class="title-copy title-select" type="button" data-title="${escapeHtml(titleText)}">${isSelected ? "선택됨" : "선택"}</button>
+          <button class="title-copy" type="button" data-title="${escapeHtml(titleText)}">복사</button>
+        </li>`;
+      }).join("");
+      $("recommendBox").innerHTML = recommendedTitle
+        ? `<strong>추천 제목</strong>${escapeHtml(recommendedTitle)}<br><br><strong>추천 이유</strong>${escapeHtml(recommendedReason)}`
+        : "";
+      document.querySelectorAll(".title-select").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedTitle = button.dataset.title || "";
+          if ($("manualTitle")) $("manualTitle").value = "";
+          $("editedTitle").value = selectedTitle;
+          renderTitleList(result);
+          $("draft").textContent = "선택한 제목에 맞춰 원고를 생성할 준비가 됐습니다. '선택 제목으로 원고 생성'을 눌러주세요.";
+        });
+      });
+      document.querySelectorAll(".title-copy").forEach((button) => {
+        if (button.classList.contains("title-select")) return;
+        button.addEventListener("click", async () => {
+          await navigator.clipboard.writeText(button.dataset.title || "");
+          button.textContent = "복사됨";
+          setTimeout(() => { button.textContent = "복사"; }, 900);
+        });
+      });
+      return { recommendedTitle, recommendedReason };
+    }
+
+    function renderResult(result, options = {}) {
+      if (!selectedTitle) {
+        const firstTitle = String(result.titles?.[0] || "").split("\n이유:")[0].replace(/^추천:\s*/, "").trim();
+        selectedTitle = firstTitle;
+      }
+      const { recommendedTitle, recommendedReason } = renderTitleList(result);
+      $("draft").textContent = result.draft;
+      lastGeneration = {
+        ...result,
+        recommendedTitle: selectedTitle || recommendedTitle,
+        recommendedReason,
+        sourceType: currentSourceType,
+        industry: $("industry").value.trim(),
+        product: $("product").value.trim(),
+        promoMemo: $("promoMemo").value.trim(),
+        source: $("reviewSource").value.trim()
+      };
+      if (!options.skipStore) storeGenerationHistory(lastGeneration);
+      if (selectedTitle || recommendedTitle) $("editedTitle").value = selectedTitle || recommendedTitle;
+      if (result.draft && !result.draft.includes("소스를 넣고")) $("editedDraft").value = result.draft;
+    }
+
+    async function saveEditedPost() {
+      if (!lastGeneration || !lastGeneration.draft) {
+        $("saveStatus").textContent = "먼저 원고를 생성해 주세요.";
+        return;
+      }
+      const payload = {
+        sourceType: currentSourceType,
+        industry: $("industry").value.trim(),
+        product: $("product").value.trim(),
+        promoMemo: $("promoMemo").value.trim(),
+        source: $("reviewSource").value.trim(),
+        aiBestTitle: lastGeneration.recommendedTitle || "",
+        aiBestReason: lastGeneration.recommendedReason || "",
+        aiTitles: lastGeneration.titles || [],
+        aiDraft: lastGeneration.draft || "",
+        editedTitle: $("editedTitle").value.trim(),
+        editedDraft: $("editedDraft").value.trim(),
+        editNotes: $("editNotes").value.trim()
+      };
+
+      $("saveStatus").textContent = "저장 중...";
+      try {
+        const response = await fetch("http://127.0.0.1:8787/save-edit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(await response.text());
+        $("saveStatus").textContent = "저장 완료. data/edited_posts.jsonl에 기록했습니다.";
+      } catch (error) {
+        const saved = JSON.parse(localStorage.getItem("editedPostsBackup") || "[]");
+        saved.push({ savedAt: new Date().toISOString(), ...payload });
+        localStorage.setItem("editedPostsBackup", JSON.stringify(saved));
+        $("saveStatus").textContent = "서버 저장은 실패해서 브라우저 임시 저장소에 저장했습니다.";
+      }
+    }
+
+    function currentEditedPayload() {
+      return {
+        sourceType: currentSourceType,
+        industry: $("industry").value.trim(),
+        product: $("product").value.trim(),
+        promoMemo: $("promoMemo").value.trim(),
+        source: $("reviewSource").value.trim(),
+        aiBestTitle: lastGeneration?.recommendedTitle || "",
+        aiBestReason: lastGeneration?.recommendedReason || "",
+        aiTitles: lastGeneration?.titles || [],
+        aiDraft: lastGeneration?.draft || "",
+        editedTitle: $("editedTitle").value.trim(),
+        editedDraft: $("editedDraft").value.trim(),
+        editNotes: $("editNotes").value.trim()
+      };
+    }
+
+    function stripStaffChecks(text) {
+      return String(text || "")
+        .replace(/\n{0,3}직원이 확인할 점[\s\S]*$/g, "")
+        .trim();
+    }
+
+    function compactDateForFilename(date = new Date()) {
+      const year = String(date.getFullYear()).slice(2);
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}${month}${day}`;
+    }
+
+    function sanitizeFilenamePart(value, fallback) {
+      return String(value || fallback)
+        .replace(/[\\/:*?"<>|]/g, " ")
+        .replace(/\s+/g, "")
+        .trim()
+        .slice(0, 40) || fallback;
+    }
+
+    function docxDownloadFilename(payload) {
+      const date = compactDateForFilename();
+      const industry = sanitizeFilenamePart(payload.industry, "업종미입력");
+      const sourceType = sanitizeFilenamePart(payload.sourceType, "소스미입력");
+      return `${date}_${industry}_${sourceType}.docx`;
+    }
+
+    async function downloadDocx() {
+      const payload = currentEditedPayload();
+      if (!payload.editedTitle || !payload.editedDraft) {
+        $("saveStatus").textContent = "최종 제목과 최종 본문을 먼저 입력해 주세요.";
+        return;
+      }
+      payload.editedDraft = stripStaffChecks(payload.editedDraft);
+      payload.aiDraft = stripStaffChecks(payload.aiDraft);
+      $("saveStatus").textContent = "워드 파일 생성 중...";
+      try {
+        const response = await fetch("http://127.0.0.1:8787/download-docx", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(await response.text());
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = docxDownloadFilename(payload);
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        $("saveStatus").textContent = "워드 검수본을 다운로드했습니다.";
+      } catch (error) {
+        $("saveStatus").textContent = `워드 파일 생성 실패: ${error.message}`;
+      }
+    }
+
+    async function generateTitlesOnly() {
+      $("error").classList.add("hidden");
+      $("debug").classList.add("hidden");
+      $("rawOutput").textContent = "";
+      $("generateTitles").textContent = "제목 생성 중...";
+      $("generateTitles").disabled = true;
+      selectedTitle = "";
+      $("titles").innerHTML = `<li class="loading-box"><span class="num"><span class="spinner"></span></span><span>소스를 보고 제목 후보만 빠르게 뽑고 있습니다...</span><span></span></li>`;
+      $("recommendBox").innerHTML = `<strong>생성 중</strong>클릭 받을 제목 5개와 추천 이유를 만드는 중입니다.`;
+      $("draft").textContent = "제목을 먼저 고른 뒤, 선택한 제목에 맞춰 원고를 생성합니다.";
+      try {
+        const data = await callCodexTitlesOnly();
+        const titles = decorateTitles(data.bestTitle || "", data.bestReason || "", data.titles || []);
+        selectedTitle = data.bestTitle || data.titles?.[0] || "";
+        renderTitleList({ titles });
+        $("editedTitle").value = selectedTitle;
+        lastGeneration = {
+          titles,
+          draft: "",
+          recommendedTitle: selectedTitle,
+          recommendedReason: data.bestReason || "",
+          sourceType: currentSourceType,
+          industry: $("industry").value.trim(),
+          product: $("product").value.trim(),
+          promoMemo: $("promoMemo").value.trim(),
+          source: $("reviewSource").value.trim()
+        };
+        storeGenerationHistory(lastGeneration);
+        $("draft").textContent = "제목을 골랐으면 '선택 제목으로 원고 생성'을 눌러주세요.";
+      } catch (error) {
+        $("error").textContent = `제목 생성에 실패했습니다: ${error.message}`;
+        $("error").classList.remove("hidden");
+        $("titles").innerHTML = "";
+        $("recommendBox").innerHTML = "";
+        $("draft").textContent = "제목 생성에 실패했습니다. 에러 메시지를 확인한 뒤 다시 시도해 주세요.";
+      } finally {
+        $("generateTitles").textContent = "제목 먼저 생성";
+        $("generateTitles").disabled = false;
+      }
+    }
+
+    async function generateDraftFromSelectedTitle() {
+      const manualTitle = $("manualTitle")?.value.trim() || "";
+      const title = manualTitle || selectedTitle || $("editedTitle").value.trim();
+      if (!title) {
+        $("error").textContent = "먼저 제목을 생성하고 사용할 제목을 선택해 주세요.";
+        $("error").classList.remove("hidden");
+        return;
+      }
+      if (manualTitle) {
+        selectedTitle = manualTitle;
+        $("editedTitle").value = manualTitle;
+      }
+      $("error").classList.add("hidden");
+      $("debug").classList.add("hidden");
+      $("generateDraftFromTitle").textContent = "원고 생성 중...";
+      $("generateDraftFromTitle").disabled = true;
+      $("draft").innerHTML = `<span class="spinner"></span>선택한 제목에 맞춰 도입부와 본문을 쓰고 있습니다.`;
+      try {
+        const data = await callCodexDraftOnly(title);
+        const checks = (data.checks || []).length
+          ? `\n\n직원이 확인할 점\n${data.checks.map((check, index) => `${index + 1}. ${check}`).join("\n")}`
+          : "";
+        const draft = `${data.draft || ""}${checks}`;
+        $("draft").textContent = draft;
+        $("editedTitle").value = title;
+        $("editedDraft").value = draft;
+        lastGeneration = {
+          ...(lastGeneration || {}),
+          draft,
+          recommendedTitle: title,
+          sourceType: currentSourceType,
+          industry: $("industry").value.trim(),
+          product: $("product").value.trim(),
+          promoMemo: $("promoMemo").value.trim(),
+          source: $("reviewSource").value.trim()
+        };
+        storeGenerationHistory(lastGeneration);
+      } catch (error) {
+        $("error").textContent = `원고 생성에 실패했습니다: ${error.message}`;
+        $("error").classList.remove("hidden");
+        $("draft").textContent = "원고 생성에 실패했습니다. 에러 메시지를 확인한 뒤 다시 시도해 주세요.";
+      } finally {
+        $("generateDraftFromTitle").textContent = "선택 제목으로 원고 생성";
+        $("generateDraftFromTitle").disabled = false;
+      }
+    }
+
+    async function generate() {
+      $("error").classList.add("hidden");
+      $("debug").classList.add("hidden");
+      $("rawOutput").textContent = "";
+      $("generate").textContent = "한번에 생성 중...";
+      $("generate").disabled = true;
+      selectedTitle = "";
+      $("titles").innerHTML = `<li class="loading-box"><span class="num"><span class="spinner"></span></span><span>제목 후보를 분석하고 있습니다...</span><span></span></li>`;
+      $("recommendBox").innerHTML = `<strong>생성 중</strong>소스를 분석해서 클릭 받을 제목과 추천 이유를 만드는 중입니다.`;
+      $("draft").innerHTML = `<span class="spinner"></span>원고 도입부와 본문을 생성하고 있습니다. 잠시만 기다려주세요.`;
+      try {
+        const text = await callAI(makeUserPrompt());
+        $("rawOutput").textContent = text;
+        renderResult(parseAiResult(text));
+      } catch (error) {
+        const isBusy = /503|UNAVAILABLE|high demand|overloaded/i.test(error.message);
+        $("error").textContent = isBusy
+          ? "AI 모델이 현재 혼잡합니다. 잠시 후 다시 생성해 주세요. Claude가 계속 막히면 Gemini로 바꿔 시도할 수 있습니다."
+          : `AI 생성에 실패했습니다: ${error.message}`;
+        $("error").classList.remove("hidden");
+        $("titles").innerHTML = "";
+        $("recommendBox").innerHTML = "";
+        $("draft").textContent = "생성에 실패했습니다. 에러 메시지를 확인한 뒤 다시 시도해 주세요.";
+        if ($("rawOutput").textContent.trim()) {
+          $("debug").classList.remove("hidden");
+        }
+      } finally {
+        $("generate").textContent = "한번에 생성";
+        $("generate").disabled = false;
+      }
+    }
+
+    function saveKey() {
+      localStorage.setItem("cafeAiProvider", selectedProvider());
+      localStorage.setItem("cafeAiKey", $("apiKey").value.trim());
+      localStorage.setItem("cafeAiModel", $("model").value.trim());
+      $("keyStatus").textContent = "저장됨: 이 브라우저에만 저장되었습니다.";
+    }
+
+    function loadKey() {
+      const savedProvider = localStorage.getItem("cafeAiProvider") || "codex";
+      const providerInput = document.querySelector(`input[name="provider"][value="${savedProvider}"]`);
+      if (providerInput) {
+        providerInput.checked = true;
+        document.querySelectorAll(".provider").forEach((el) => el.classList.toggle("active", el.dataset.provider === savedProvider));
+        $("providerStatus").textContent = `현재: ${document.querySelector(`.provider[data-provider="${savedProvider}"] strong`)?.textContent || "AI"} (본인 키)`;
+      }
+      $("apiKey").value = localStorage.getItem("cafeAiKey") || localStorage.getItem("cafeGeminiKey") || "";
+      $("model").value = localStorage.getItem("cafeAiModel") || (savedProvider === "claude" ? "claude-sonnet-4-20250514" : "gemini-2.0-flash");
+      $("youtubeApiKey").value = localStorage.getItem("cafeYoutubeKey") || "";
+      $("youtubeChannels").value = localStorage.getItem("cafeYoutubeChannels") || $("youtubeChannels").value;
+      $("keyStatus").textContent = $("apiKey").value ? "저장된 키가 있습니다." : "아직 저장된 키가 없습니다.";
+    }
+
+    document.querySelectorAll(".tab[data-type]").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab[data-type]").forEach((el) => el.classList.remove("active"));
+        tab.classList.add("active");
+        currentType = tab.dataset.type;
+        fillSample(currentType);
+      });
+    });
+
+    function setSourceType(type) {
+      const sourceTab = document.querySelector(`.tab[data-source-type="${type}"]`);
+      if (!sourceTab) return;
+      document.querySelectorAll(".tab[data-source-type]").forEach((el) => el.classList.remove("active"));
+      sourceTab.classList.add("active");
+      currentSourceType = type;
+      $("reviewSource").placeholder = currentSourceType === "review"
+        ? "네이버 후기 원문을 붙여넣으세요."
+        : "장사 유튜브 최신 콘텐츠 제목/요약을 붙여넣으세요.";
+    }
+
+    document.querySelectorAll(".tab[data-source-type]").forEach((tab) => {
+      tab.addEventListener("click", () => setSourceType(tab.dataset.sourceType));
+    });
+
+    function fillSample(type) {
+      const sample = samples[type] || samples.review;
+      $("reviewSource").value = sample.review || "";
+      $("cafeSource").value = sample.cafe || "";
+      $("youtubeSource").value = sample.youtube || "";
+    }
+
+    document.querySelectorAll(".provider").forEach((provider) => {
+      provider.addEventListener("click", () => {
+        document.querySelectorAll(".provider").forEach((el) => el.classList.remove("active"));
+        provider.classList.add("active");
+        provider.querySelector("input").checked = true;
+        $("providerStatus").textContent = `현재: ${provider.querySelector("strong").textContent} (본인 키)`;
+        if (provider.dataset.provider === "claude" && (!$("model").value || $("model").value.includes("gemini"))) {
+          $("model").value = "claude-sonnet-4-20250514";
+        }
+        if (provider.dataset.provider === "gemini" && (!$("model").value || $("model").value.includes("claude"))) {
+          $("model").value = "gemini-2.0-flash";
+        }
+        if (provider.dataset.provider === "codex") {
+          $("model").value = "";
+        }
+      });
+    });
+
+    function setActiveTab(type) {
+      const tab = document.querySelector(`.tab[data-type="${type}"]`);
+      if (!tab) return;
+      document.querySelectorAll(".tab[data-type]").forEach((el) => el.classList.remove("active"));
+      tab.classList.add("active");
+      currentType = type;
+    }
+
+    function applyRoutine() {
+      const routine = currentRoutine();
+      $("routineMemo").value = `${routine.type} - ${routine.goal}`;
+      setActiveTab(routine.tab);
+      $("tone").value = routine.tone;
+      $("cta").value = routine.cta;
+    }
+
+    function youtubeKey() {
+      return $("youtubeApiKey").value.trim() || $("apiKey").value.trim();
+    }
+
+    async function youtubeApi(path, params) {
+      const key = youtubeKey();
+      if (!key) throw new Error("YouTube API 키 또는 Gemini API 키를 먼저 입력해 주세요.");
+      const query = new URLSearchParams({ ...params, key });
+      const response = await fetch(`https://www.googleapis.com/youtube/v3/${path}?${query.toString()}`);
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`YouTube API 호출 실패: ${response.status} ${text.slice(0, 180)}`);
+      }
+      return response.json();
+    }
+
+    async function resolveChannelId(input) {
+      const value = input.trim();
+      if (!value) return "";
+      if (/^UC[\w-]{20,}$/.test(value)) return value;
+      const query = value.startsWith("@") ? value : `@${value}`;
+      const data = await youtubeApi("search", {
+        part: "snippet",
+        q: query,
+        type: "channel",
+        maxResults: "1"
+      });
+      return data.items?.[0]?.snippet?.channelId || "";
+    }
+
+    async function fetchLatestVideos() {
+      $("videoStatus").textContent = "최신 영상 불러오는 중...";
+      $("videoList").innerHTML = "";
+      try {
+        const channels = $("youtubeChannels").value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+        if (!channels.length) throw new Error("추천 유튜버 채널을 먼저 입력해 주세요.");
+        const videos = [];
+
+        for (const channel of channels.slice(0, 12)) {
+          const channelId = await resolveChannelId(channel);
+          if (!channelId) continue;
+          const data = await youtubeApi("search", {
+            part: "snippet",
+            channelId,
+            order: "date",
+            type: "video",
+            maxResults: "3"
+          });
+          for (const item of data.items || []) {
+            videos.push({
+              channel: item.snippet.channelTitle,
+              title: item.snippet.title,
+              description: item.snippet.description,
+              publishedAt: item.snippet.publishedAt,
+              url: `https://www.youtube.com/watch?v=${item.id.videoId}`
+            });
+          }
+        }
+
+        videos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+        localStorage.setItem("cafeLatestVideos", JSON.stringify(videos.slice(0, 20)));
+        renderVideos(videos.slice(0, 20));
+        $("videoStatus").textContent = `${videos.length}개 영상 후보를 불러왔습니다.`;
+      } catch (error) {
+        $("videoStatus").textContent = error.message;
+      }
+    }
+
+    function renderVideos(videos) {
+      $("videoList").innerHTML = videos.map((video, index) => {
+        const date = video.publishedAt ? new Date(video.publishedAt).toLocaleDateString("ko-KR") : "";
+        return `<label class="video-item">
+          <input type="checkbox" value="${index}" ${index < 2 ? "checked" : ""} />
+          <span>
+            <strong>${escapeHtml(video.title)}</strong>
+            <span class="video-meta">${escapeHtml(video.channel)} · ${date}</span>
+            <span class="video-meta">${escapeHtml(video.description || "")}</span>
+          </span>
+        </label>`;
+      }).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function applySelectedVideos() {
+      const videos = JSON.parse(localStorage.getItem("cafeLatestVideos") || "[]");
+      const selected = [...$("videoList").querySelectorAll("input:checked")]
+        .map((input) => videos[Number(input.value)])
+        .filter(Boolean);
+      if (!selected.length) {
+        $("videoStatus").textContent = "선택된 영상이 없습니다.";
+        return;
+      }
+      $("youtubeSource").value = selected.map((video, index) => {
+        return `${index + 1}. [${video.channel}] ${video.title}\n요약/설명: ${video.description || "설명 없음"}\nURL: ${video.url}`;
+      }).join("\n\n");
+      $("videoStatus").textContent = `${selected.length}개 영상을 오늘 소재칸에 넣었습니다.`;
+    }
+
+    function renderYoutubeScenes(items) {
+      if (!items || !items.length) {
+        $("youtubeScenes").innerHTML = "";
+        return;
+      }
+      $("youtubeScenes").innerHTML = items.map((item, index) => `
+        <div class="scene-item">
+          <label class="scene-select">
+            <input type="checkbox" data-image-url="${escapeHtml(item.imageUrl || "")}" data-index="${index + 1}" />
+            선택 후보 ${index + 1}
+          </label>
+          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">장면 후보 ${index + 1} · ${escapeHtml(item.time)}</a>
+          <span>${escapeHtml(item.text)}</span>
+          ${item.imageUrl ? `<img src="${escapeHtml(item.imageUrl)}" alt="장면 후보 ${index + 1}" />` : `<span class="video-meta">${escapeHtml(item.imageError || "스크린샷 없음")}</span>`}
+        </div>
+      `).join("");
+      $("youtubeScenes").querySelectorAll(".scene-item input").forEach((input) => {
+        input.addEventListener("change", () => {
+          input.closest(".scene-item").classList.toggle("selected", input.checked);
+        });
+      });
+    }
+
+    function nowTime() {
+      return new Date().toLocaleTimeString("ko-KR", { hour12: false });
+    }
+
+    function openProgress(title) {
+      $("progressTitle").textContent = title;
+      $("progressMessage").textContent = "준비 중...";
+      $("progressBar").style.width = "0%";
+      $("progressCount").textContent = "";
+      $("progressLog").textContent = "";
+      $("progressRing").style.display = "block";
+      $("progressModal").classList.remove("hidden");
+    }
+
+    function appendProgressLog(message) {
+      $("progressLog").textContent += `[${nowTime()}] ${message}\n`;
+      $("progressLog").scrollTop = $("progressLog").scrollHeight;
+    }
+
+    function setProgress(step, total, message, logMessage = message) {
+      const percent = total ? Math.round((step / total) * 100) : 0;
+      $("progressMessage").textContent = message;
+      $("progressBar").style.width = `${percent}%`;
+      $("progressCount").textContent = total ? `${step} / ${total}` : "";
+      if (logMessage) appendProgressLog(logMessage);
+    }
+
+    function closeProgress() {
+      if (progressTimer) {
+        clearInterval(progressTimer);
+        progressTimer = null;
+      }
+      $("progressModal").classList.add("hidden");
+    }
+
+    function startYoutubeProgress(url) {
+      const steps = [
+        "YouTube URL 확인 중...",
+        "yt-dlp로 영상 정보 조회 중...",
+        "자막/자동자막 가져오는 중...",
+        "대본을 소스용으로 정리하는 중...",
+        "장면 후보 15개를 고르는 중...",
+        "스크린샷 이미지 생성 중...",
+        "원고생성기 화면에 반영 중..."
+      ];
+      openProgress("유튜브 대본/장면 추출");
+      appendProgressLog(`대상 URL: ${url}`);
+      setProgress(1, steps.length, steps[0]);
+      let index = 1;
+      progressTimer = setInterval(() => {
+        if (index >= steps.length - 1) return;
+        index += 1;
+        setProgress(index, steps.length, steps[index - 1]);
+      }, 1800);
+    }
+
+    function startPopularTimeProgress({ url, days, maxPages }) {
+      openProgress("인기글 시간대 분석");
+      appendProgressLog("terminal-style log viewer initialized");
+      appendProgressLog(`대상: ${url}`);
+      appendProgressLog(`분석 기간: 최근 ${days}일`);
+      appendProgressLog(`전체글 최대 수집 페이지: ${maxPages}`);
+      $("progressMessage").textContent = "네이버 인기글/전체글 데이터를 수집하는 중...";
+      $("progressBar").style.width = "6%";
+      $("progressCount").textContent = "준비 중";
+      progressTimer = setInterval(() => {
+        appendProgressLog("대기 중... 네이버 응답을 기다리고 있습니다.");
+      }, 5000);
+    }
+
+    async function downloadSelectedScenes() {
+      const selected = [...$("youtubeScenes").querySelectorAll(".scene-item input:checked")]
+        .map((input) => ({
+          url: input.dataset.imageUrl,
+          index: input.dataset.index || "0"
+        }))
+        .filter((item) => item.url);
+      if (!selected.length) {
+        $("youtubeExtractStatus").textContent = "다운로드할 장면 이미지를 먼저 체크해 주세요.";
+        return;
+      }
+      $("youtubeExtractStatus").textContent = `${selected.length}장 다운로드를 시작합니다.`;
+      for (const item of selected) {
+        const link = document.createElement("a");
+        link.href = item.url;
+        link.download = `youtube_scene_${String(item.index).padStart(2, "0")}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+    }
+
+    async function extractYoutubeToSource() {
+      const url = $("youtubeUrl").value.trim();
+      if (!url) {
+        $("youtubeExtractStatus").textContent = "YouTube URL을 먼저 입력해 주세요.";
+        return;
+      }
+      $("youtubeExtractStatus").textContent = "유튜브 자막과 장면 후보를 불러오는 중...";
+      $("youtubeScenes").innerHTML = "";
+      $("extractYoutubeSource").disabled = true;
+      startYoutubeProgress(url);
+      try {
+        const response = await fetch("http://127.0.0.1:8787/youtube-source", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "유튜브 소스 추출에 실패했습니다.");
+        if (progressTimer) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+        }
+        setProgress(6, 7, "스크린샷과 대본을 정리하는 중...", `대본 ${data.source?.length || 0}자 / 장면 후보 ${data.sceneCandidates?.length || 0}개 추출 완료`);
+        setSourceType("youtube");
+        $("reviewSource").value = data.source || "";
+        renderYoutubeScenes(data.sceneCandidates || []);
+        setProgress(7, 7, "완료되었습니다.", "소스칸과 장면 후보 화면에 반영 완료");
+        $("progressRing").style.display = "none";
+        $("youtubeExtractStatus").textContent = data.warning
+          ? `소스칸에 넣었습니다. 장면 후보 ${data.sceneCandidates?.length || 0}개 중 마음에 드는 5장을 체크해서 참고하세요. ${data.warning}`
+          : `유튜브 대본을 소스칸에 넣었습니다. 장면 후보 ${data.sceneCandidates?.length || 0}개 중 마음에 드는 5장을 체크해서 참고하세요.`;
+      } catch (error) {
+        if (progressTimer) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+        }
+        $("progressRing").style.display = "none";
+        $("progressMessage").textContent = "추출에 실패했습니다.";
+        appendProgressLog(`오류: ${error.message}`);
+        $("youtubeExtractStatus").textContent = `유튜브 소스 추출 실패: ${error.message}`;
+      } finally {
+        $("extractYoutubeSource").disabled = false;
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result || "");
+          resolve(result.split(",")[1] || "");
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function attachImageFile(file) {
+      attachedImage = {
+        mimeType: file.type || "image/png",
+        base64: await fileToBase64(file)
+      };
+      $("previewImg").src = URL.createObjectURL(file);
+      $("imagePreview").style.display = "block";
+      clearSourceAnalysis('이미지가 바뀌었습니다. 다시 분석해 주세요.');
+    }
+
+    async function handleReviewImage(event) {
+      const file = event.target.files?.[0];
+      if (!file) {
+        attachedImage = null;
+        $("imagePreview").style.display = "none";
+        clearSourceAnalysis("이미지가 삭제되었습니다. 필요하면 다시 분석해 주세요.");
+        return;
+      }
+      await attachImageFile(file);
+    }
+
+    async function handlePaste(event) {
+      const items = [...(event.clipboardData?.items || [])];
+      const imageItem = items.find((item) => item.type.startsWith("image/"));
+      if (!imageItem) return;
+      const file = imageItem.getAsFile();
+      if (!file) return;
+      await attachImageFile(file);
+    }
+
+    function switchAppView(viewName) {
+      document.querySelectorAll(".side-tab").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === viewName);
+      });
+      $("viewWriter").classList.toggle("hidden", viewName !== "writer");
+      $("viewBoard").classList.toggle("hidden", viewName !== "board");
+      $("viewPopularTime").classList.toggle("hidden", viewName !== "popularTime");
+    }
+
+    function parseKoreanNumber(value) {
+      const text = String(value || "").replace(/,/g, "").trim();
+      if (!text) return 0;
+      if (text.includes("만")) {
+        const number = Number(text.replace("만", ""));
+        return Number.isFinite(number) ? Math.round(number * 10000) : 0;
+      }
+      const number = Number(text.replace(/[^\d.]/g, ""));
+      return Number.isFinite(number) ? Math.round(number) : 0;
+    }
+
+    function cleanBoardTitle(value) {
+      return String(value || "")
+        .replace(/^선택\s*/i, "")
+        .replace(/^[-•·]\s*/, "")
+        .replace(/\s*댓글수?\s*\[\s*\d+\s*\]\s*/g, " ")
+        .replace(/\s*\[\s*\d+\s*\]\s*/g, " ")
+        .replace(/\s*new\s*$/i, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function parseBoardText(text) {
+      const lines = String(text || "")
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const rows = [];
+      const skip = /^(제목|작성자|작성일|조회수|게시글 목록|전체글보기|\d[\d,]*개의 글|공지|선택)$/;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (skip.test(line)) continue;
+        const tabParts = line.split(/\t+/).map((part) => part.trim()).filter(Boolean);
+        if (tabParts.length >= 3) {
+          const titlePart = tabParts.find((part) => /[가-힣A-Za-z]/.test(part) && !/^\d{4}\./.test(part)) || tabParts[0];
+          const datePart = tabParts.find((part) => /^\d{4}\.\d{2}\.\d{2}/.test(part) || /^\d{1,2}:\d{2}$/.test(part)) || "";
+          const viewPart = [...tabParts].reverse().find((part) => /^[\d,.]+만?$/.test(part)) || "";
+          const commentMatch = line.match(/\[\s*(\d+)\s*\]/);
+          const title = cleanBoardTitle(titlePart);
+          if (title.length >= 4 && viewPart) {
+            rows.push({ title, comments: commentMatch ? Number(commentMatch[1]) : 0, date: datePart, views: parseKoreanNumber(viewPart) });
+            continue;
+          }
+        }
+
+        const commentMatch = line.match(/\[\s*(\d+)\s*\]/);
+        const hasTitleSignal = /[가-힣]/.test(line) && !/멤버등급|작성자|URL 복사/.test(line);
+        if (!hasTitleSignal) continue;
+        const dateIndex = lines.slice(i + 1, i + 7).findIndex((next) => /^\d{4}\.\d{2}\.\d{2}/.test(next) || /^\d{1,2}:\d{2}$/.test(next));
+        const date = dateIndex >= 0 ? lines[i + 1 + dateIndex] : "";
+        const viewLine = lines.slice(i + 1, i + 8).find((next) => /^[\d,]+$/.test(next) || /^[\d.]+만$/.test(next)) || "";
+        const title = cleanBoardTitle(line);
+        if (title.length >= 4 && !skip.test(title)) {
+          rows.push({ title, comments: commentMatch ? Number(commentMatch[1]) : 0, date, views: parseKoreanNumber(viewLine) });
+        }
+      }
+
+      const unique = new Map();
+      rows.forEach((row) => {
+        const key = `${row.title}|${row.date}`;
+        if (!unique.has(key) || unique.get(key).views < row.views) unique.set(key, row);
+      });
+      return [...unique.values()].sort((a, b) => b.views - a.views);
+    }
+
+    function renderBoardResults() {
+      $("boardRows").innerHTML = boardResults.map((row) => `
+        <tr>
+          <td>${escapeHtml(row.title)}</td>
+          <td class="num-cell">${row.comments || ""}</td>
+          <td>${escapeHtml(row.date || "")}</td>
+          <td class="num-cell">${row.views ? row.views.toLocaleString("ko-KR") : ""}</td>
+        </tr>
+      `).join("");
+      const top = boardResults[0];
+      $("boardSummary").textContent = boardResults.length
+        ? `총 ${boardResults.length}개를 분석했습니다. 최고 조회수: ${top.views.toLocaleString("ko-KR")} / ${top.title}`
+        : "아직 분석된 게시글이 없습니다.";
+    }
+
+    function parseBoardPaste() {
+      boardResults = parseBoardText($("boardPaste").value);
+      renderBoardResults();
+      $("boardStatus").textContent = boardResults.length
+        ? `분석 완료: 조회수 높은순으로 ${boardResults.length}개 정리했습니다.`
+        : "분석할 게시글을 찾지 못했습니다. 게시판 목록에서 제목/작성일/조회수가 보이게 복사해 주세요.";
+    }
+
+    async function crawlBoardByUrl() {
+      const url = $("boardUrl").value.trim();
+      const allPages = $("boardAllPages").checked;
+      const includeContent = $("boardIncludeContent").checked;
+      const pages = allPages ? 500 : Number($("boardPages").value || 1);
+      const urlCount = url.split(/\s+/).filter(Boolean).length;
+      if (!url) {
+        $("boardStatus").textContent = "게시판 URL을 먼저 입력해 주세요.";
+        return;
+      }
+      $("boardStatus").textContent = allPages
+        ? `네이버 카페 게시판 ${urlCount}개 URL 전체 페이지 수집 중${includeContent ? " (본문/이미지 포함)" : ""}...`
+        : `네이버 카페 게시판 ${urlCount}개 URL, ${pages || 1}페이지씩 수집 중${includeContent ? " (본문/이미지 포함)" : ""}...`;
+      $("crawlBoard").disabled = true;
+      $("crawlBoard").textContent = "수집 중...";
+      try {
+        const response = await fetch("http://127.0.0.1:8787/crawl-board", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, pages, allPages, includeContent })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || await response.text());
+        boardResults = data.rows || [];
+        renderBoardResults();
+        const reportText = Array.isArray(data.reports) ? ` / 게시판 ${data.reports.length}개` : "";
+        $("boardStatus").textContent = `수집 완료${reportText}: 총 ${data.pageCount}페이지, ${boardResults.length}개를 조회수 높은순으로 정리했습니다.`;
+      } catch (error) {
+        $("boardStatus").textContent = `URL 자동 수집 실패: ${error.message} 그래도 아래 복사 붙여넣기 방식은 사용할 수 있습니다.`;
+      } finally {
+        $("crawlBoard").disabled = false;
+        $("crawlBoard").textContent = "URL로 자동 수집";
+      }
+    }
+
+    function boardCsv() {
+      const hasContent = boardResults.some((row) => row.content || (row.imageUrls && row.imageUrls.length));
+      const header = hasContent
+        ? ["menuId", "page", "title", "comments", "date", "views", "writer", "content", "imageUrls", "link"]
+        : ["menuId", "page", "title", "comments", "date", "views", "writer", "link"];
+      const rows = boardResults.map((row) => hasContent
+        ? [row.menuId || "", row.page || "", row.title, row.comments || 0, row.date || "", row.views || 0, row.writer || "", row.content || "", (row.imageUrls || []).join("\n"), row.link || ""]
+        : [row.menuId || "", row.page || "", row.title, row.comments || 0, row.date || "", row.views || 0, row.writer || "", row.link || ""]);
+      return [header, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    }
+
+    function downloadBoardCsv() {
+      if (!boardResults.length) {
+        $("boardStatus").textContent = "먼저 게시판 목록을 분석해 주세요.";
+        return;
+      }
+      const blob = new Blob(["\ufeff" + boardCsv()], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cafe_board_titles_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function saveBoardReferences() {
+      if (!boardResults.length) {
+        $("boardStatus").textContent = "먼저 게시판 목록을 분석해 주세요.";
+        return;
+      }
+      const saved = JSON.parse(localStorage.getItem(boardReferenceKey) || "[]");
+      const record = {
+        savedAt: new Date().toISOString(),
+        sourceUrl: $("boardUrl").value.trim(),
+        memo: $("boardPages").value.trim(),
+        titles: boardResults.slice(0, 50)
+      };
+      localStorage.setItem(boardReferenceKey, JSON.stringify([record, ...saved].slice(0, 20)));
+      $("boardStatus").textContent = `제목 레퍼런스로 저장했습니다. 상위 ${Math.min(50, boardResults.length)}개가 브라우저에 보관됩니다.`;
+    }
+
+    function pct(value) {
+      return `${(Number(value || 0) * 100).toFixed(1)}%`;
+    }
+
+    function savePopularTimeResult() {
+      if (!popularTimeResult) return;
+      const payload = {
+        savedAt: new Date().toISOString(),
+        sourceUrl: $("popularCafeUrl")?.value.trim() || "",
+        days: Number($("popularDays")?.value || popularTimeResult.days || 7),
+        maxPages: Number($("popularMaxPages")?.value || 300),
+        result: popularTimeResult
+      };
+      try {
+        localStorage.setItem(popularTimeStorageKey, JSON.stringify(payload));
+      } catch (error) {
+        $("popularTimeStatus").textContent = `분석 결과 저장 실패: ${error.message}`;
+      }
+    }
+
+    function loadPopularTimeResult() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(popularTimeStorageKey) || "null");
+        if (!saved?.result) return;
+        popularTimeResult = saved.result;
+        if (saved.sourceUrl && $("popularCafeUrl")) $("popularCafeUrl").value = saved.sourceUrl;
+        if (saved.days && $("popularDays")) $("popularDays").value = saved.days;
+        if (saved.maxPages && $("popularMaxPages")) $("popularMaxPages").value = saved.maxPages;
+        renderPopularTimeResult();
+        const savedAt = new Date(saved.savedAt || Date.now());
+        const when = Number.isNaN(savedAt.getTime())
+          ? ""
+          : savedAt.toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+        $("popularTimeStatus").textContent = when ? `저장된 시간대 분석 결과를 불러왔습니다. (${when})` : "저장된 시간대 분석 결과를 불러왔습니다.";
+      } catch (_) {
+        localStorage.removeItem(popularTimeStorageKey);
+      }
+    }
+
+    function renderPopularTimeResult() {
+      const rows = popularTimeResult?.hourly || [];
+      const activeRows = rows.filter((row) => row.totalPosts || row.popularPosts);
+      $("popularTimeRows").innerHTML = activeRows.map((row) => `
+        <tr>
+          <td>${escapeHtml(row.label)}</td>
+          <td class="num-cell">${row.totalPosts.toLocaleString("ko-KR")}</td>
+          <td class="num-cell">${row.popularPosts.toLocaleString("ko-KR")}</td>
+          <td class="num-cell">${pct(row.conversionRate)}</td>
+          <td class="num-cell">${Math.round(row.avgViews || 0).toLocaleString("ko-KR")}</td>
+          <td class="num-cell">${(row.avgComments || 0).toFixed(1)}</td>
+        </tr>
+      `).join("");
+
+      const topRows = popularTimeResult?.topPopular || [];
+      $("popularTopRows").innerHTML = topRows.map((row) => `
+        <tr>
+          <td>${escapeHtml(row.title)}</td>
+          <td>${escapeHtml(row.dateTime || "")}</td>
+          <td class="num-cell">${(row.views || 0).toLocaleString("ko-KR")}</td>
+          <td class="num-cell">${(row.comments || 0).toLocaleString("ko-KR")}</td>
+        </tr>
+      `).join("");
+
+      const rawPopularRows = popularTimeResult?.rawPopularRows || [];
+      const rawMatchedPopularRows = popularTimeResult?.rawMatchedPopularRows || [];
+      const rawAllRows = popularTimeResult?.rawAllRows || [];
+      const renderRawRows = (list, includeLikes = false, includeImage = false) => list.map((row) => `
+        <tr>
+          <td>${row.link ? `<a href="${escapeHtml(row.link)}" target="_blank" rel="noreferrer">${escapeHtml(row.title || "")}</a>` : escapeHtml(row.title || "")}</td>
+          <td>${escapeHtml(row.dateTime || "")}</td>
+          ${includeLikes || includeImage ? "" : `<td>${escapeHtml(row.menuName || "")}</td>`}
+          <td class="num-cell">${(row.views || 0).toLocaleString("ko-KR")}</td>
+          <td class="num-cell">${(row.comments || 0).toLocaleString("ko-KR")}</td>
+          ${includeLikes ? `<td class="num-cell">${(row.likes || 0).toLocaleString("ko-KR")}</td>` : ""}
+          ${includeImage ? `<td class="num-cell">${(row.imageCount || 0).toLocaleString("ko-KR")}</td>` : ""}
+        </tr>
+      `).join("");
+      $("rawPopularRows").innerHTML = renderRawRows(rawPopularRows, true, true);
+      $("rawMatchedPopularRows").innerHTML = renderRawRows(rawMatchedPopularRows, false, false);
+      $("rawAllRows").innerHTML = renderRawRows(rawAllRows, false, false);
+      $("rawPopularCount").textContent = `(${rawPopularRows.length.toLocaleString("ko-KR")})`;
+      $("rawMatchedPopularCount").textContent = `(${rawMatchedPopularRows.length.toLocaleString("ko-KR")})`;
+      $("rawAllCount").textContent = `(${rawAllRows.length.toLocaleString("ko-KR")})`;
+      $("popularRawSummary").textContent = popularTimeResult
+        ? `인기글 API에서 ${rawPopularRows.length.toLocaleString("ko-KR")}개, 전체글 API에서 ${rawAllRows.length.toLocaleString("ko-KR")}개를 수집했습니다. 매칭된 인기글은 ${rawMatchedPopularRows.length.toLocaleString("ko-KR")}개입니다.`
+        : "분석을 실행하면 네이버에서 실제로 가져온 인기글과 전체글 목록을 그대로 확인할 수 있습니다.";
+
+      if (!popularTimeResult) {
+        $("popularTimeSummary").textContent = "아직 분석 결과가 없습니다.";
+        return;
+      }
+      const bestRate = popularTimeResult.bestByConversion;
+      const bestViews = popularTimeResult.bestByViews;
+      const warning = popularTimeResult.truncated ? " 전체글 최대 페이지에 걸려 일부 기간이 누락됐을 수 있습니다." : "";
+      $("popularTimeSummary").textContent =
+        `최근 ${popularTimeResult.days}일 기준 전체글 ${popularTimeResult.allCount.toLocaleString("ko-KR")}개와 현재 인기글 ${Number(popularTimeResult.popularFetched || popularTimeResult.popularCount || 0).toLocaleString("ko-KR")}개 중 기간 내 매칭된 ${popularTimeResult.popularCount.toLocaleString("ko-KR")}개를 비교했습니다. ` +
+        (bestRate ? `전환율은 ${bestRate.label}이 가장 높고(${pct(bestRate.conversionRate)}), ` : "") +
+        (bestViews ? `평균 조회는 ${bestViews.label}이 가장 높습니다.` : "") +
+        warning;
+    }
+
+    async function analyzePopularTime() {
+      const url = $("popularCafeUrl").value.trim();
+      const days = Number($("popularDays").value || 7);
+      const maxPages = Number($("popularMaxPages").value || 300);
+      if (!url) {
+        $("popularTimeStatus").textContent = "카페 URL 또는 cafeId를 입력해 주세요.";
+        return;
+      }
+      $("popularTimeStatus").textContent = `최근 ${days}일 전체글/인기글 수집 중...`;
+      $("analyzePopularTime").disabled = true;
+      startPopularTimeProgress({ url, days, maxPages });
+      $("analyzePopularTime").textContent = "분석 중...";
+      try {
+        const response = await fetch("http://127.0.0.1:8787/analyze-popular-time-stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, days, maxPages })
+        });
+        if (!response.ok) throw new Error(await response.text());
+        if (!response.body) throw new Error("브라우저가 스트리밍 응답을 지원하지 않습니다.");
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+        let logCount = 0;
+        let resultData = null;
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            const event = JSON.parse(line);
+            if (event.type === "log") {
+              logCount += 1;
+              appendProgressLog(event.message);
+              $("progressBar").style.width = `${Math.min(90, 8 + logCount * 4)}%`;
+              $("progressCount").textContent = `로그 ${logCount}줄`;
+              $("progressMessage").textContent = event.message;
+            } else if (event.type === "result") {
+              resultData = event.data;
+            } else if (event.type === "error") {
+              throw new Error(event.message);
+            }
+          }
+        }
+        if (buffer.trim()) {
+          const event = JSON.parse(buffer);
+          if (event.type === "result") resultData = event.data;
+          if (event.type === "error") throw new Error(event.message);
+        }
+        if (!resultData) throw new Error("분석 결과를 받지 못했습니다.");
+        popularTimeResult = resultData;
+        renderPopularTimeResult();
+        savePopularTimeResult();
+        $("progressBar").style.width = "100%";
+        $("progressCount").textContent = "완료";
+        $("progressRing").style.display = "none";
+        $("progressMessage").textContent = "분석 완료.";
+        appendProgressLog(`완료: 인기글 ${popularTimeResult.popularFetched || 0}개 / 전체글 ${popularTimeResult.allCount || 0}개 수집`);
+        $("popularTimeStatus").textContent = "분석 완료.";
+      } catch (error) {
+        $("popularTimeStatus").textContent = `분석 실패: ${error.message}`;
+      } finally {
+        if (progressTimer) {
+          clearInterval(progressTimer);
+          progressTimer = null;
+        }
+        $("analyzePopularTime").disabled = false;
+        $("analyzePopularTime").textContent = "시간대 분석 실행";
+      }
+    }
+
+    function popularTimeCsv() {
+      if (!popularTimeResult) return "";
+      const csvCell = (cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`;
+      const csvLine = (row) => row.map(csvCell).join(",");
+      const rows = [];
+
+      rows.push(["section", "hour", "label", "totalPosts", "popularPosts", "conversionRate", "avgViews", "avgComments", "avgPopularViews", "avgPopularComments", "title", "dateTime", "menuName", "views", "comments", "likes", "link", "imageUrl", "articleId"]);
+
+      (popularTimeResult.hourly || []).forEach((row) => {
+        rows.push([
+          "시간대요약",
+          row.hour ?? "",
+          row.label ?? "",
+          row.totalPosts ?? "",
+          row.popularPosts ?? "",
+          row.conversionRate ?? "",
+          row.avgViews ?? "",
+          row.avgComments ?? "",
+          row.avgPopularViews ?? "",
+          row.avgPopularComments ?? "",
+          "", "", "", "", "", "", "", "", ""
+        ]);
+      });
+
+      const addRawRows = (section, list) => {
+        (list || []).forEach((row) => {
+          rows.push([
+            section,
+            "", "", "", "", "", "", "", "", "",
+            row.title || "",
+            row.dateTime || "",
+            row.menuName || "",
+            row.views ?? "",
+            row.comments ?? "",
+            row.likes ?? "",
+            row.link || "",
+            row.imageUrl || "",
+            row.articleId || ""
+          ]);
+        });
+      };
+
+      addRawRows("수집한인기글전체", popularTimeResult.rawPopularRows || []);
+      addRawRows("기간내매칭된인기글", popularTimeResult.rawMatchedPopularRows || []);
+      addRawRows("수집한전체글", popularTimeResult.rawAllRows || []);
+
+      return rows.map(csvLine).join("\n");
+    }
+
+    function downloadPopularTimeCsv() {
+      if (!popularTimeResult) {
+        $("popularTimeStatus").textContent = "먼저 시간대 분석을 실행해 주세요.";
+        return;
+      }
+      const blob = new Blob(["\ufeff" + popularTimeCsv()], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `popular_time_analysis_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    $("toggleSettings").addEventListener("click", () => $("settingsPanel").classList.toggle("hidden"));
+    $("closeSettings").addEventListener("click", () => $("settingsPanel").classList.add("hidden"));
+    $("saveKey").addEventListener("click", saveKey);
+    $("clearKey").addEventListener("click", () => {
+      localStorage.removeItem("cafeAiKey");
+      localStorage.removeItem("cafeAiModel");
+      localStorage.removeItem("cafeAiProvider");
+      localStorage.removeItem("cafeGeminiKey");
+      localStorage.removeItem("cafeGeminiModel");
+      $("apiKey").value = "";
+      $("keyStatus").textContent = "키를 삭제했습니다.";
+    });
+    $("analyzeSource").addEventListener("click", analyzeSource);
+    $("reviewSource").addEventListener("input", () => clearSourceAnalysis("소스 내용이 바뀌었습니다. 다시 분석해 주세요."));
+    $("generateTitles").addEventListener("click", generateTitlesOnly);
+    $("generateDraftFromTitle").addEventListener("click", generateDraftFromSelectedTitle);
+    $("generate").addEventListener("click", generate);
+    $("manualTitle")?.addEventListener("input", () => {
+      const value = $("manualTitle").value.trim();
+      if (!value) return;
+      selectedTitle = value;
+      $("editedTitle").value = value;
+    });
+    $("applyRoutine").addEventListener("click", applyRoutine);
+    $("weekday").addEventListener("change", applyRoutine);
+    $("saveChannels").addEventListener("click", () => {
+      localStorage.setItem("cafeYoutubeKey", $("youtubeApiKey").value.trim());
+      localStorage.setItem("cafeYoutubeChannels", $("youtubeChannels").value.trim());
+      $("videoStatus").textContent = "유튜버 채널 목록을 저장했습니다.";
+    });
+    $("fetchVideos").addEventListener("click", fetchLatestVideos);
+    $("applyVideos").addEventListener("click", applySelectedVideos);
+    $("extractYoutubeSource").addEventListener("click", extractYoutubeToSource);
+    $("progressClose").addEventListener("click", closeProgress);
+    $("downloadSelectedScenes").addEventListener("click", downloadSelectedScenes);
+    $("reviewImage").addEventListener("change", handleReviewImage);
+    window.addEventListener("paste", handlePaste);
+    $("sample").addEventListener("click", () => {
+      fillSample(currentType);
+    });
+    $("loadHotVideoFile").addEventListener("click", () => $("hotVideoFile").click());
+    $("hotVideoFile").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      $("cafeSource").value = text.slice(0, 12000);
+    });
+    $("copyDraft").addEventListener("click", async () => {
+      await navigator.clipboard.writeText($("draft").textContent);
+      $("copyDraft").textContent = "본문 복사됨";
+      setTimeout(() => { $("copyDraft").textContent = "본문 복사"; }, 900);
+    });
+    $("saveEditedPost").addEventListener("click", saveEditedPost);
+    $("copyEditedDraft").addEventListener("click", async () => {
+      await navigator.clipboard.writeText($("editedDraft").value);
+      $("copyEditedDraft").textContent = "복사됨";
+      setTimeout(() => { $("copyEditedDraft").textContent = "최종 본문 복사"; }, 900);
+    });
+    $("downloadDocx").addEventListener("click", downloadDocx);
+    document.querySelectorAll(".side-tab").forEach((button) => {
+      button.addEventListener("click", () => switchAppView(button.dataset.view));
+    });
+    $("crawlBoard").addEventListener("click", crawlBoardByUrl);
+    $("parseBoard").addEventListener("click", parseBoardPaste);
+    $("downloadBoardCsv").addEventListener("click", downloadBoardCsv);
+    $("saveBoardRefs").addEventListener("click", saveBoardReferences);
+    $("clearBoard").addEventListener("click", () => {
+      boardResults = [];
+      $("boardPaste").value = "";
+      renderBoardResults();
+      $("boardStatus").textContent = "비웠습니다.";
+    });
+    $("analyzePopularTime").addEventListener("click", analyzePopularTime);
+    $("downloadPopularTimeCsv").addEventListener("click", downloadPopularTimeCsv);
+    $("clearPopularTime").addEventListener("click", () => {
+      popularTimeResult = null;
+      renderPopularTimeResult();
+      $("popularTimeRows").innerHTML = "";
+      $("popularTopRows").innerHTML = "";
+      $("rawPopularRows").innerHTML = "";
+      $("rawMatchedPopularRows").innerHTML = "";
+      $("rawAllRows").innerHTML = "";
+      $("rawPopularCount").textContent = "(0)";
+      $("rawMatchedPopularCount").textContent = "(0)";
+      $("rawAllCount").textContent = "(0)";
+      localStorage.removeItem(popularTimeStorageKey);
+      $("popularTimeStatus").textContent = "비웠습니다.";
+    });
+    $("openHistoryDrawer")?.addEventListener("click", openHistoryDrawer);
+    $("closeHistoryDrawer")?.addEventListener("click", closeHistoryDrawer);
+    $("historyDrawerBackdrop")?.addEventListener("click", closeHistoryDrawer);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeHistoryDrawer();
+    });
+
+    loadKey();
+    applyRoutine();
+    renderGenerationHistory();
+    renderBoardResults();
+    loadPopularTimeResult();
+    renderResult({ titles: [], draft: "소스를 넣고 제목/원고 생성을 눌러주세요." });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
