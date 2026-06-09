@@ -7,10 +7,58 @@ const { spawn } = require("node:child_process");
 
 const root = __dirname;
 const port = Number(process.env.PORT || 8787);
-const codexExe = process.env.CODEX_EXE || path.join(os.homedir(), "AppData", "Local", "OpenAI", "Codex", "bin", "codex.exe");
-const codexModel = process.env.CODEX_MODEL || "";
-const codexReasoningEffort = process.env.CODEX_REASONING_EFFORT || "low";
 const pythonExe = process.env.PYTHON_EXE || path.join(os.homedir(), ".cache", "codex-runtimes", "codex-primary-runtime", "dependencies", "python", "python.exe");
+const appSettingsPath = path.join(root, "app_settings.json");
+
+const defaultAppSettings = {
+  ai: {
+    codexExe: process.env.CODEX_EXE || path.join(os.homedir(), "AppData", "Local", "OpenAI", "Codex", "bin", "codex.exe"),
+    codexModel: process.env.CODEX_MODEL || "",
+    codexReasoningEffort: process.env.CODEX_REASONING_EFFORT || "low",
+    claudeCliExe: process.env.CLAUDE_EXE || "claude",
+    claudeCliArgs: process.env.CLAUDE_ARGS || "-p"
+  },
+  prompts: {
+    businessProfile: "",
+    titleStyleGuide: "",
+    bodyStyleGuide: "",
+    factGuardGuide: ""
+  }
+};
+
+let appSettings = readAppSettings();
+
+function mergeSettings(base, extra) {
+  return {
+    ai: { ...(base.ai || {}), ...((extra && extra.ai) || {}) },
+    prompts: { ...(base.prompts || {}), ...((extra && extra.prompts) || {}) }
+  };
+}
+
+function readAppSettings() {
+  try {
+    const raw = fs.readFileSync(appSettingsPath, "utf8");
+    return mergeSettings(defaultAppSettings, JSON.parse(raw));
+  } catch {
+    return mergeSettings(defaultAppSettings, {});
+  }
+}
+
+async function saveAppSettings(nextSettings) {
+  appSettings = mergeSettings(defaultAppSettings, nextSettings || {});
+  await fsp.writeFile(appSettingsPath, JSON.stringify(appSettings, null, 2), "utf8");
+  return appSettings;
+}
+
+function promptOverrideBlock() {
+  const prompts = appSettings.prompts || {};
+  const blocks = [];
+  if (prompts.businessProfile) blocks.push(`대표/업체 맞춤 설정:\n${prompts.businessProfile}`);
+  if (prompts.titleStyleGuide) blocks.push(`제목 스타일 추가 지시:\n${prompts.titleStyleGuide}`);
+  if (prompts.bodyStyleGuide) blocks.push(`본문 스타일 추가 지시:\n${prompts.bodyStyleGuide}`);
+  if (prompts.factGuardGuide) blocks.push(`사실 검증 추가 지시:\n${prompts.factGuardGuide}`);
+  return blocks.length ? `\n\n개인화 설정:\n${blocks.join("\n\n")}\n` : "";
+}
 
 function send(res, status, data, type = "application/json; charset=utf-8") {
   res.writeHead(status, {
@@ -751,6 +799,7 @@ ${TITLE_REFERENCE_GUIDE}
 ${SOURCE_FACT_GUARD_GUIDE}
 ${BODY_TONE_GUIDE}
 ${PROMO_FOOTER_GUIDE}
+${promptOverrideBlock()}
 
 출력은 반드시 JSON만 쓴다. 설명, 마크다운, 코드블록 금지.
 스키마:
@@ -798,6 +847,7 @@ function buildTitlePrompt(input) {
 ${TITLE_REFERENCE_GUIDE}
 
 ${SOURCE_FACT_GUARD_GUIDE}
+${promptOverrideBlock()}
 출력은 반드시 JSON만 쓴다. 설명, 마크다운, 코드블록 금지.
 스키마:
 {
@@ -862,6 +912,7 @@ function buildDraftPrompt(input) {
 ${BODY_TONE_GUIDE}
 ${PROMO_FOOTER_GUIDE}
 ${SOURCE_FACT_GUARD_GUIDE}
+${promptOverrideBlock()}
 
 출력은 반드시 JSON만 쓴다. 설명, 마크다운, 코드블록 금지.
 스키마:
@@ -973,6 +1024,10 @@ function docxFilename(input) {
 }
 
 async function runCodex(input, options = {}) {
+  const aiSettings = appSettings.ai || {};
+  const codexExe = aiSettings.codexExe || defaultAppSettings.ai.codexExe;
+  const codexModel = aiSettings.codexModel || "";
+  const codexReasoningEffort = aiSettings.codexReasoningEffort || "low";
   const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "cafe-codex-"));
   const outputPath = path.join(tempDir, "last-message.json");
   const schemaPath = path.join(root, options.schema || "codex_output_schema.json");
@@ -1490,6 +1545,18 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && url.pathname.startsWith("/data/")) {
       return await sendStaticDataFile(url.pathname, res);
+    }
+
+    if (req.method === "GET" && url.pathname === "/app-settings") {
+      appSettings = readAppSettings();
+      return send(res, 200, appSettings);
+    }
+
+    if (req.method === "POST" && url.pathname === "/app-settings") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const saved = await saveAppSettings(input);
+      return send(res, 200, saved);
     }
 
     if (req.method === "POST" && url.pathname === "/analyze-source-codex") {

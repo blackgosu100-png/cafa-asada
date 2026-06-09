@@ -8,6 +8,7 @@ __pycache__/
 data/
 vendor/
 dist/
+app_settings.json
 
 .env
 .env.*
