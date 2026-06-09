@@ -19,6 +19,10 @@ const defaultAppSettings = {
     claudeCliArgs: process.env.CLAUDE_ARGS || "-p"
   },
   prompts: {
+    communityName: "아프니까 사장이다",
+    sellerDescription: "주방용품 업체",
+    audienceDescription: "자영업 사장님",
+    channelGuidance: "",
     businessProfile: "",
     titleStyleGuide: "",
     bodyStyleGuide: "",
@@ -53,11 +57,27 @@ async function saveAppSettings(nextSettings) {
 function promptOverrideBlock() {
   const prompts = appSettings.prompts || {};
   const blocks = [];
+  if (prompts.communityName || prompts.sellerDescription || prompts.audienceDescription) {
+    blocks.push([
+      "기본 채널/타깃 설정:",
+      `- 커뮤니티/채널: ${prompts.communityName || "아프니까 사장이다"}`,
+      `- 판매자/상품군: ${prompts.sellerDescription || "주방용품 업체"}`,
+      `- 읽는 사람: ${prompts.audienceDescription || "자영업 사장님"}`
+    ].join("\n"));
+  }
+  if (prompts.channelGuidance) blocks.push(`채널별 말투/금지사항:\n${prompts.channelGuidance}`);
   if (prompts.businessProfile) blocks.push(`대표/업체 맞춤 설정:\n${prompts.businessProfile}`);
   if (prompts.titleStyleGuide) blocks.push(`제목 스타일 추가 지시:\n${prompts.titleStyleGuide}`);
   if (prompts.bodyStyleGuide) blocks.push(`본문 스타일 추가 지시:\n${prompts.bodyStyleGuide}`);
   if (prompts.factGuardGuide) blocks.push(`사실 검증 추가 지시:\n${prompts.factGuardGuide}`);
   return blocks.length ? `\n\n개인화 설정:\n${blocks.join("\n\n")}\n` : "";
+}
+
+function promptRole(task) {
+  const prompts = appSettings.prompts || {};
+  const communityName = prompts.communityName || "아프니까 사장이다";
+  const sellerDescription = prompts.sellerDescription || "주방용품 업체";
+  return `너는 네이버 카페 '${communityName}'에 맞춰 ${sellerDescription}의 ${task}다.`;
 }
 
 function send(res, status, data, type = "application/json; charset=utf-8") {
@@ -474,7 +494,7 @@ function buildPrompt(input) {
     : "";
   const analysisNote = input.sourceAnalysis ? `\n사전 소스 분석 결과:\n${input.sourceAnalysis}\n` : "";
 
-  return `너는 네이버 카페 '아프니까 사장이다'에 입점한 주방용품 업체의 카페 원고 편집자다.
+  return `${promptRole("카페 원고 편집자")}
 
 목표:
 - 광고 티를 줄이고 사장님 커뮤니티에서 클릭과 댓글이 나올 만한 글을 쓴다.
@@ -537,7 +557,7 @@ function buildTitlePrompt(input) {
     : "";
   const analysisNote = input.sourceAnalysis ? `\n사전 소스 분석 결과:\n${input.sourceAnalysis}\n` : "";
 
-  return `너는 네이버 카페 '아프니까 사장이다'에 입점한 주방용품 업체의 제목 편집자다.
+  return `${promptRole("제목 편집자")}
 
 목표:
 - 본문은 쓰지 말고, 클릭 받을 제목만 빠르게 만든다.
@@ -610,7 +630,7 @@ function buildDraftPrompt(input) {
     : "";
   const analysisNote = input.sourceAnalysis ? `\n사전 소스 분석 결과:\n${input.sourceAnalysis}\n` : "";
 
-  return `너는 네이버 카페 '아프니까 사장이다'에 입점한 주방용품 업체의 카페 원고 편집자다.
+  return `${promptRole("카페 원고 편집자")}
 
 목표:
 - 사용자가 선택한 제목의 약속을 본문에서 자연스럽게 회수한다.
@@ -786,7 +806,7 @@ function buildPrompt(input) {
     : "";
   const analysisNote = input.sourceAnalysis ? `\n사전 소스 분석 결과:\n${input.sourceAnalysis}\n` : "";
 
-  return `너는 네이버 카페 '아프니까 사장이다'에 입점한 주방용품 업체의 카페 원고 편집자다.
+  return `${promptRole("카페 원고 편집자")}
 
 목표:
 - 클릭을 받을 제목 5개와, 끝까지 읽히는 카페 원고 1개를 만든다.
@@ -837,7 +857,7 @@ function buildTitlePrompt(input) {
     : "";
   const analysisNote = input.sourceAnalysis ? `\n사전 소스 분석 결과:\n${input.sourceAnalysis}\n` : "";
 
-  return `너는 네이버 카페 '아프니까 사장이다'에 입점한 주방용품 업체의 제목 편집자다.
+  return `${promptRole("제목 편집자")}
 
 목표:
 - 본문은 쓰지 말고 클릭 받을 제목 5개만 빠르게 만든다.
@@ -901,7 +921,7 @@ function buildDraftPrompt(input) {
     : "";
   const analysisNote = input.sourceAnalysis ? `\n사전 소스 분석 결과:\n${input.sourceAnalysis}\n` : "";
 
-  return `너는 네이버 카페 '아프니까 사장이다'에 입점한 주방용품 업체의 카페 원고 편집자다.
+  return `${promptRole("카페 원고 편집자")}
 
 목표:
 - 사용자가 선택한 제목에 맞춰 450~700자 원고를 쓴다. 길면 안 읽히므로 반복을 줄인다.
@@ -1084,6 +1104,104 @@ async function runCodex(input, options = {}) {
 
   const raw = await fsp.readFile(outputPath, "utf8");
   return JSON.parse(raw);
+}
+
+function splitCommandLine(value) {
+  const input = String(value || "").trim();
+  if (!input) return [];
+  const parts = [];
+  let current = "";
+  let quote = "";
+  let escape = false;
+  for (const char of input) {
+    if (escape) {
+      current += char;
+      escape = false;
+      continue;
+    }
+    if (char === "\\") {
+      escape = true;
+      continue;
+    }
+    if (quote) {
+      if (char === quote) quote = "";
+      else current += char;
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      if (current) {
+        parts.push(current);
+        current = "";
+      }
+      continue;
+    }
+    current += char;
+  }
+  if (current) parts.push(current);
+  return parts;
+}
+
+function parseJsonFromText(text) {
+  const value = String(text || "").trim();
+  if (!value) throw new Error("Claude CLI가 빈 응답을 반환했습니다.");
+  try {
+    return JSON.parse(value);
+  } catch {
+    const start = value.indexOf("{");
+    const end = value.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      return JSON.parse(value.slice(start, end + 1));
+    }
+    throw new Error(`Claude CLI 응답에서 JSON을 찾지 못했습니다: ${value.slice(0, 240)}`);
+  }
+}
+
+async function runClaudeCli(input, options = {}) {
+  const aiSettings = appSettings.ai || {};
+  const claudeCliExe = aiSettings.claudeCliExe || "claude";
+  const claudeArgs = splitCommandLine(aiSettings.claudeCliArgs || "-p");
+  const promptInput = { ...input, hasImage: Boolean(input.image && input.image.base64) };
+  const prompt = options.promptBuilder
+    ? options.promptBuilder(promptInput)
+    : buildPrompt(promptInput);
+  const finalPrompt = `${prompt}
+
+중요: 반드시 위 스키마에 맞는 JSON 객체만 출력해라. 설명, 마크다운, 코드블록, 앞뒤 문장 금지.`;
+
+  return await new Promise((resolve, reject) => {
+    const child = spawn(claudeCliExe, [...claudeArgs, finalPrompt], {
+      cwd: root,
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+      shell: false
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", (error) => {
+      reject(new Error(`Claude CLI 실행 실패: ${error.message}`));
+    });
+    child.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(stderr || `Claude CLI failed with code ${code}`));
+        return;
+      }
+      try {
+        resolve(parseJsonFromText(stdout));
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
 }
 
 async function buildDocx(input) {
@@ -1575,6 +1693,13 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, result);
     }
 
+    if (req.method === "POST" && url.pathname === "/generate-claude-cli") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await runClaudeCli(input);
+      return send(res, 200, result);
+    }
+
     if (req.method === "POST" && url.pathname === "/generate-codex-titles") {
       const body = await readBody(req);
       const input = JSON.parse(body || "{}");
@@ -1585,11 +1710,29 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, result);
     }
 
+    if (req.method === "POST" && url.pathname === "/generate-claude-cli-titles") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await runClaudeCli(input, {
+        promptBuilder: buildTitlePrompt
+      });
+      return send(res, 200, result);
+    }
+
     if (req.method === "POST" && url.pathname === "/generate-codex-draft") {
       const body = await readBody(req);
       const input = JSON.parse(body || "{}");
       const result = await runCodex(input, {
         schema: "codex_draft_schema.json",
+        promptBuilder: buildDraftPrompt
+      });
+      return send(res, 200, result);
+    }
+
+    if (req.method === "POST" && url.pathname === "/generate-claude-cli-draft") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await runClaudeCli(input, {
         promptBuilder: buildDraftPrompt
       });
       return send(res, 200, result);
