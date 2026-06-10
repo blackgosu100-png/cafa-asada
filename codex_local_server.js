@@ -1288,6 +1288,45 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000, label = "요청") {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error(`${label} 응답 지연: ${Math.round(timeoutMs / 1000)}초 안에 응답이 없어 중단했습니다.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchWithRetry(url, options = {}, config = {}) {
+  const {
+    timeoutMs = 15000,
+    label = "요청",
+    retries = 1,
+    onLog = () => {}
+  } = config;
+  let lastError = null;
+  for (let attempt = 1; attempt <= retries + 1; attempt += 1) {
+    try {
+      return await fetchWithTimeout(url, options, timeoutMs, label);
+    } catch (error) {
+      lastError = error;
+      if (attempt > retries) break;
+      onLog(`${label} 실패: ${error.message} / ${attempt}회 재시도`);
+      await delay(500);
+    }
+  }
+  throw lastError;
+}
+
 function htmlToPlainText(html) {
   return decodeHtml(String(html || "")
     .replace(/<\s*br\s*\/?>/gi, "\n")
@@ -1468,13 +1507,18 @@ async function fetchCafePopularArticles(cafeId, onLog = () => {}) {
   apiUrl.searchParams.set("adUnit", "PC_CAFE_BOARD");
   apiUrl.searchParams.set("ad", "false");
 
-  const response = await fetch(apiUrl, {
+  const response = await fetchWithRetry(apiUrl, {
     headers: {
       "Accept": "application/json, text/plain, */*",
       "User-Agent": "Mozilla/5.0",
       "Referer": `https://cafe.naver.com/ca-fe/cafes/${cafeId}/popular`,
       "Origin": "https://cafe.naver.com"
     }
+  }, {
+    label: "인기글 API",
+    timeoutMs: 20000,
+    retries: 1,
+    onLog
   });
   if (!response.ok) throw new Error(`인기글 API 호출 실패: ${response.status}`);
   const json = await response.json();
@@ -1506,13 +1550,18 @@ async function fetchCafeAllArticlesForDays(cafeId, days, maxPages, onLog = () =>
   for (let page = 1; page <= pageLimit; page += 1) {
     const apiUrl = new URL(`https://apis.naver.com/cafe-web/cafe-boardlist-api/v1/cafes/${cafeId}/menus/0/articles`);
     apiUrl.searchParams.set("page", String(page));
-    const response = await fetch(apiUrl, {
+    const response = await fetchWithRetry(apiUrl, {
       headers: {
         "Accept": "application/json, text/plain, */*",
         "User-Agent": "Mozilla/5.0",
         "Referer": `https://cafe.naver.com/f-e/cafes/${cafeId}/menus/0`,
         "Origin": "https://cafe.naver.com"
       }
+    }, {
+      label: `전체글 ${page}페이지 API`,
+      timeoutMs: 15000,
+      retries: 1,
+      onLog
     });
     if (!response.ok) throw new Error(`전체글 API 호출 실패: ${response.status}`);
     const json = await response.json();
@@ -1546,9 +1595,8 @@ async function fetchCafeAllArticlesForDays(cafeId, days, maxPages, onLog = () =>
         link: `https://cafe.naver.com/f-e/cafes/${cafeId}/articles/${article.articleId}`
       });
     }
-    if (page === 1 || page % 10 === 0 || reachedOlder || page === pageLimit) {
-      onLog(`전체글 ${page}페이지 수집 완료 / 누적 ${rows.length.toLocaleString("ko-KR")}개`);
-    }
+    const percent = Math.min(100, Math.round((page / pageLimit) * 100));
+    onLog(`전체글 ${page}/${pageLimit}페이지 수집 완료 (${percent}%) / 누적 ${rows.length.toLocaleString("ko-KR")}개`);
     if (reachedOlder) {
       onLog(`최근 ${days}일 범위를 벗어난 글을 만나 수집 종료`);
       break;
