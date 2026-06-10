@@ -592,12 +592,74 @@
       border-radius: 8px;
       overflow: hidden;
       background: #fff;
+      cursor: zoom-in;
     }
 
     .image-preview img {
       display: block;
       width: 100%;
       height: auto;
+    }
+
+    .image-preview:focus-visible {
+      outline: 3px solid rgba(0, 122, 108, 0.25);
+      outline-offset: 3px;
+    }
+
+    .image-zoom-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.78);
+    }
+
+    .image-zoom-modal.hidden {
+      display: none;
+    }
+
+    .image-zoom-card {
+      position: relative;
+      max-width: min(96vw, 1440px);
+      max-height: 92vh;
+      background: #111827;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 24px 72px rgba(0, 0, 0, 0.34);
+      overflow: auto;
+    }
+
+    .image-zoom-card img {
+      display: block;
+      max-width: none;
+      width: auto;
+      height: auto;
+      min-width: min(100%, 320px);
+    }
+
+    .image-zoom-close {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(17, 24, 39, 0.9);
+      color: #ffffff;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .image-zoom-hint {
+      position: fixed;
+      left: 24px;
+      bottom: 18px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 12px;
+      font-weight: 700;
     }
 
     .source-analysis-actions {
@@ -2063,7 +2125,7 @@
       <label for="reviewImage">리뷰 사진 첨부 (선택)</label>
       <input id="reviewImage" type="file" accept="image/*" />
       <div class="hint">캡처한 뒤 이 화면에서 Ctrl+V를 눌러도 자동 첨부됩니다.</div>
-      <div class="image-preview" id="imagePreview"><img id="previewImg" alt="첨부 이미지 미리보기" /></div>
+      <div class="image-preview" id="imagePreview" role="button" tabindex="0" aria-label="첨부 이미지 원본 크게 보기"><img id="previewImg" alt="첨부 이미지 미리보기" /></div>
       <div class="source-analysis-actions">
         <button class="secondary" id="analyzeSource" type="button">소스 분석하기</button>
         <span class="hint" id="sourceAnalysisStatus">후기와 이미지를 먼저 분석하면 제목 품질이 안정됩니다.</span>
@@ -2398,6 +2460,14 @@
     </div>
   </div>
 
+  <div class="image-zoom-modal hidden" id="imageZoomModal" aria-hidden="true">
+    <button class="image-zoom-close" id="imageZoomClose" type="button" aria-label="닫기">×</button>
+    <div class="image-zoom-card" id="imageZoomCard">
+      <img id="imageZoomImg" alt="첨부 이미지 원본 보기" />
+    </div>
+    <div class="image-zoom-hint">원본 크기입니다. 이미지가 크면 스크롤해서 확인하세요.</div>
+  </div>
+
   <button class="saved-results-button" id="openHistoryDrawer" type="button">
     원고 저장함 <span class="badge" id="savedResultsCount">0</span>
   </button>
@@ -2421,6 +2491,7 @@
     let currentType = "review";
     let currentSourceType = "review";
     let attachedImage = null;
+    let attachedImageUrl = "";
     let lastGeneration = null;
     let selectedTitle = "";
     let progressTimer = null;
@@ -4031,20 +4102,44 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
     }
 
     async function attachImageFile(file) {
+      if (attachedImageUrl) URL.revokeObjectURL(attachedImageUrl);
+      attachedImageUrl = URL.createObjectURL(file);
       attachedImage = {
         mimeType: file.type || "image/png",
         base64: await fileToBase64(file)
       };
-      $("previewImg").src = URL.createObjectURL(file);
+      $("previewImg").src = attachedImageUrl;
       $("imagePreview").style.display = "block";
       clearSourceAnalysis('이미지가 바뀌었습니다. 다시 분석해 주세요.');
+    }
+
+    function closeImageZoom() {
+      $("imageZoomModal").classList.add("hidden");
+      $("imageZoomModal").setAttribute("aria-hidden", "true");
+      $("imageZoomImg").removeAttribute("src");
+    }
+
+    function clearAttachedImage() {
+      attachedImage = null;
+      if (attachedImageUrl) URL.revokeObjectURL(attachedImageUrl);
+      attachedImageUrl = "";
+      $("previewImg").removeAttribute("src");
+      $("imagePreview").style.display = "none";
+      closeImageZoom();
+    }
+
+    function openImageZoom() {
+      if (!attachedImageUrl) return;
+      $("imageZoomImg").src = attachedImageUrl;
+      $("imageZoomModal").classList.remove("hidden");
+      $("imageZoomModal").setAttribute("aria-hidden", "false");
+      $("imageZoomClose").focus();
     }
 
     async function handleReviewImage(event) {
       const file = event.target.files?.[0];
       if (!file) {
-        attachedImage = null;
-        $("imagePreview").style.display = "none";
+        clearAttachedImage();
         clearSourceAnalysis("이미지가 삭제되었습니다. 필요하면 다시 분석해 주세요.");
         return;
       }
@@ -4567,8 +4662,21 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
     $("openHistoryDrawer")?.addEventListener("click", openHistoryDrawer);
     $("closeHistoryDrawer")?.addEventListener("click", closeHistoryDrawer);
     $("historyDrawerBackdrop")?.addEventListener("click", closeHistoryDrawer);
+    $("imagePreview")?.addEventListener("click", openImageZoom);
+    $("imagePreview")?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openImageZoom();
+    });
+    $("imageZoomClose")?.addEventListener("click", closeImageZoom);
+    $("imageZoomModal")?.addEventListener("click", (event) => {
+      if (event.target === $("imageZoomModal")) closeImageZoom();
+    });
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeHistoryDrawer();
+      if (event.key === "Escape") {
+        closeImageZoom();
+        closeHistoryDrawer();
+      }
     });
 
     loadKey();
