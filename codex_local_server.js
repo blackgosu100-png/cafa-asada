@@ -481,6 +481,7 @@ const SOURCE_FACT_GUARD_GUIDE = `
 소스 사실 검증 기준:
 - 사전 소스 분석 결과가 있으면 "추출 원문", "검증된 사실", "제목에 써도 안전한 사실", "주의할 오해"를 먼저 확인한다.
 - 사전 소스 분석 결과에 "제목감 원문", "후킹 점수", "검수 보완", "제목 우선순위"가 있으면 제목과 도입부는 이 항목을 최우선으로 따른다.
+- 사전 소스 분석 결과에 "최우선 훅"이 있으면 bestTitle과 후보 2개 이상은 이 훅을 반영해야 한다. 반영하지 못하면 제목을 다시 쓴다.
 - 제목과 본문에는 검증된 사실과 제목에 써도 안전한 사실을 우선 사용한다.
 - 숫자, 기간, 사용 기간, 수량, 누가 좋아했는지, 아픈 부위, 구매 전 고민, 사용 팁은 원문 근거가 직접 있을 때만 쓴다.
 - "작게/크게", "빠르게/느리게", "전/후", "구매 전/사용 후", "1년/일주일"처럼 반대로 읽히기 쉬운 비교 표현은 주의할 오해를 기준으로 다시 확인한다.
@@ -488,6 +489,26 @@ const SOURCE_FACT_GUARD_GUIDE = `
 - 예: "1년"이 제품 사용 기간이 아니어서 cautionFlags에 잡혔다면 "1년 사용", "1년 버티다", "1년 만에"처럼 어떤 형태로도 제목에 넣지 않는다.
 - 이미지 단서는 장면 묘사와 현장감에만 쓰고, 원문과 충돌하면 원문과 검증된 사실을 우선한다.
 - 사전 분석의 cautionFlags 또는 제목에서 피할 방향에 적힌 표현은 제목과 본문에 쓰지 않는다.
+`;
+
+const TITLE_HARNESS_GUIDE = `
+제목 하네스 검수 기준:
+- 생성자는 제목을 만들기 전에 topHook, 제목감 원문, 후킹 점수, 검수 보완, 제목 우선순위를 먼저 읽는다.
+- topHook.mustUseInTitle이 true면 bestTitle은 topHook.quote의 핵심 표현을 살려야 한다. 단 원문을 길게 복붙하지 말고 카페 제목처럼 줄인다.
+- 5개 후보 중 최소 2개는 topHook 또는 80점 이상 hookScores에서 출발해야 한다.
+- 범용 템플릿으로 도망가면 실패다. 특히 "이 사진 보면 이해됩니다", "아직 쓰세요?", "준비가 밀리던 이유", "사장님들, ~하시나요?", "처음엔 기대 안 했는데요..."는 topHook보다 강한 경우가 아니면 bestTitle 금지다.
+- "사진첨부"는 이미지가 있을 때 보조 훅으로만 쓴다. 원문에 강한 문장이 있으면 사진 훅보다 원문 훅을 우선한다.
+- bestTitle을 고른 뒤 스스로 검수한다: 1) 이 소스만의 고유 문장인가 2) topHook이 살아있는가 3) 광고/AI 문체가 아닌가 4) 원문 사실을 왜곡하지 않는가.
+- 검수에서 하나라도 실패하면 bestTitle과 titles를 다시 쓴 뒤 JSON만 출력한다.
+`;
+
+const KOREAN_HUMAN_TONE_GUIDE = `
+카페글 AI 티 제거 기준:
+- 너무 정돈된 보고서 문장, 기계적인 병렬 구조, "결론적으로", "시사하는 바", "주목할 만한", "효율을 제공합니다" 같은 문구를 피한다.
+- 제목은 키워드 조합이 아니라 사람이 카페에 쓴 말처럼 읽혀야 한다.
+- 본문은 "또한/따라서/이러한/이를 통해" 같은 문두 접속사를 남발하지 않는다.
+- 의미, 수치, 단점, 평점, 직접 인용은 보존한다. 자연스럽게 만든다고 사실을 바꾸지 않는다.
+- 과윤문 금지. 후기의 날것 같은 표현이 클릭 포인트면 정리하지 말고 살린다.
 `;
 function buildPrompt(input) {
   const imageNote = input.hasImage
@@ -816,9 +837,11 @@ function buildPrompt(input) {
 - 허위 경험담을 만들지 않는다. 소스에 없는 성능, 수치, 보장은 쓰지 않는다.
 
 ${TITLE_REFERENCE_GUIDE}
+${TITLE_HARNESS_GUIDE}
 
 ${SOURCE_FACT_GUARD_GUIDE}
 ${BODY_TONE_GUIDE}
+${KOREAN_HUMAN_TONE_GUIDE}
 ${PROMO_FOOTER_GUIDE}
 ${promptOverrideBlock()}
 
@@ -866,8 +889,10 @@ function buildTitlePrompt(input) {
 - 타깃 업종은 좋지만, 모든 제목을 업종명으로 시작하지는 마라.
 
 ${TITLE_REFERENCE_GUIDE}
+${TITLE_HARNESS_GUIDE}
 
 ${SOURCE_FACT_GUARD_GUIDE}
+${KOREAN_HUMAN_TONE_GUIDE}
 ${promptOverrideBlock()}
 출력은 반드시 JSON만 쓴다. 설명, 마크다운, 코드블록 금지.
 스키마:
@@ -933,6 +958,7 @@ function buildDraftPrompt(input) {
 - 허위 경험담을 만들지 않는다. 소스에 없는 성능, 수치, 보장은 쓰지 않는다.
 
 ${BODY_TONE_GUIDE}
+${KOREAN_HUMAN_TONE_GUIDE}
 ${PROMO_FOOTER_GUIDE}
 ${SOURCE_FACT_GUARD_GUIDE}
 ${promptOverrideBlock()}
@@ -998,6 +1024,7 @@ function buildSourceAnalysisPrompt(input) {
   "hookQuotes": ["제목감 원문. 원문에서 그대로 가져온 강한 문장/구절 3~7개. 비교, 반전, 기대와 실제 차이, 생활 변화급 만족, 사람 반응을 우선. 빈 배열 금지"],
   "hookScores": ["후킹 점수. 각 제목감 원문을 감정강도/구체성/반전성/제목화가능성/제품연결성 기준으로 100점 만점 평가. 예: 92점 - 식세기, 로봇청소기 이후... - 생활 변화급 비교라 제목 우선"],
   "reviewerNotes": ["검수 보완. 1차 분석이 놓치면 안 되는 문장과 그 이유. 예: 기능보다 만족감 비교가 더 강함. 빈 배열 금지"],
+  "topHook": {"quote": "가장 강한 제목감 원문 1개", "score": 0, "reason": "왜 이 문장이 가장 강한지", "mustUseInTitle": true},
   "titlePriority": ["제목 우선순위. 제목 생성 때 먼저 살릴 소재 순서. 1순위는 가장 점수 높은 hookQuotes를 기반으로 작성. 빈 배열 금지"],
   "productBridge": ["제품 연결 포인트"],
   "titleMustUse": ["제목에 꼭 살릴 단어"],
@@ -1026,12 +1053,13 @@ ${imageNote}
 8. 이미지연결 10점: 사진/영상에 보이는 장면이 원문핵심을 어떻게 증명하는지 잡는다. 보이는 장면만으로 원문에 없는 성능이나 반응을 만들지 않는다.
 9. 제품CTA연결 5점: 댓글/문의/링크 확인/제품 필요성으로 이어질 포인트를 잡는다.
 10. hookScores는 감정강도, 구체성, 반전성, 제목화가능성, 제품연결성을 기준으로 100점 만점으로 적고, 80점 이상 문장은 titlePriority 상위에 둔다.
-11. reviewerNotes에는 "기능 키워드보다 더 센 문장", "제목에서 놓치면 손해인 문장", "원문 의미를 바꾸면 위험한 문장"을 적는다.
-12. titlePriority 1순위는 가장 점수 높은 hookQuotes에서 가져온다. 2순위는 원문핵심/감정핵심, 3순위는 이미지 단서, 4순위는 제품 연결 포인트로 둔다.
-13. verifiedFacts에는 최소 5개 이상, titleSafeFacts에는 최소 3개 이상 적는다.
-14. titleMustUse와 titleSafeFacts에는 현재 소스에 실제로 있는 단어와 검증 사실만 넣는다.
-15. 제목에서 오해될 수 있는 숫자/기간은 titleSafeFacts에 넣지 말고 cautionFlags에 넣는다. 예: 제품 사용 기간이 아닌 기존 작업 기간 "1년"은 "1년 사용"으로 오해되므로 titleSafeFacts에서 제외한다.
-16. titleAvoid와 cautionFlags에는 이미지 표면만 설명하거나 현재 소스에 없는 과거 예시 단어를 끌어오는 방향, 원문 의미를 뒤집을 위험이 있는 표현을 적는다.`;
+11. topHook에는 hookScores 중 가장 높은 문장 1개를 구조화해서 넣는다. score가 80점 이상이면 mustUseInTitle은 true다.
+12. reviewerNotes에는 "기능 키워드보다 더 센 문장", "제목에서 놓치면 손해인 문장", "원문 의미를 바꾸면 위험한 문장"을 적는다.
+13. titlePriority 1순위는 topHook.quote에서 가져온다. 2순위는 원문핵심/감정핵심, 3순위는 이미지 단서, 4순위는 제품 연결 포인트로 둔다.
+14. verifiedFacts에는 최소 5개 이상, titleSafeFacts에는 최소 3개 이상 적는다.
+15. titleMustUse와 titleSafeFacts에는 현재 소스에 실제로 있는 단어와 검증 사실만 넣는다.
+16. 제목에서 오해될 수 있는 숫자/기간은 titleSafeFacts에 넣지 말고 cautionFlags에 넣는다. 예: 제품 사용 기간이 아닌 기존 작업 기간 "1년"은 "1년 사용"으로 오해되므로 titleSafeFacts에서 제외한다.
+17. titleAvoid와 cautionFlags에는 이미지 표면만 설명하거나 현재 소스에 없는 과거 예시 단어를 끌어오는 방향, 원문 의미를 뒤집을 위험이 있는 표현을 적는다.`;
 }
 function safeFilename(value) {
   return String(value || "카페_검수_원고")

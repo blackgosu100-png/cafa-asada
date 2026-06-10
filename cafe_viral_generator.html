@@ -2211,6 +2211,8 @@
       </div>
 
       <div class="actions">
+        <button class="secondary" id="analyzeThenTitles" type="button">분석하고 제목까지</button>
+        <button class="primary" id="analyzeThenDraft" type="button">분석하고 원고까지</button>
         <button class="primary" id="generateTitles">제목 먼저 생성</button>
         <button class="secondary" id="generateDraftFromTitle">선택 제목으로 원고 생성</button>
         <button class="ghost" id="generate">한번에 생성</button>
@@ -2800,8 +2802,17 @@ ${youtubeContent || $("youtubeSource").value.trim()}
     function sourceAnalysisForPrompt() {
       if (!sourceAnalysisResult) return "";
       if (sourceAnalysisFingerprint !== currentSourceFingerprint()) return "";
+      const topHook = sourceAnalysisResult.topHook
+        ? [
+            `최우선 훅: ${sourceAnalysisResult.topHook.quote || ""}`,
+            `최우선 훅 점수: ${sourceAnalysisResult.topHook.score ?? ""}`,
+            `최우선 훅 이유: ${sourceAnalysisResult.topHook.reason || ""}`,
+            `제목 필수 반영: ${sourceAnalysisResult.topHook.mustUseInTitle ? "예" : "아니오"}`
+          ].join("\n")
+        : "";
       return [
         `한 줄 요약: ${sourceAnalysisResult.summary || ""}`,
+        topHook,
         listForPrompt("추출 원문", sourceAnalysisResult.extractedText),
         listForPrompt("주요 키워드", sourceAnalysisResult.coreKeywords),
         listForPrompt("원문 핵심", sourceAnalysisResult.originalCore),
@@ -2830,12 +2841,24 @@ ${youtubeContent || $("youtubeSource").value.trim()}
       `;
     }
 
+    function renderTopHook(topHook) {
+      if (!topHook) return "";
+      const lines = [
+        topHook.quote ? `문장: ${topHook.quote}` : "",
+        topHook.score != null ? `점수: ${topHook.score}` : "",
+        topHook.reason ? `이유: ${topHook.reason}` : "",
+        `제목 필수 반영: ${topHook.mustUseInTitle ? "예" : "아니오"}`
+      ].filter(Boolean);
+      return renderAnalysisList("최우선 훅", lines);
+    }
+
     function renderSourceAnalysis(data) {
       sourceAnalysisResult = data;
       sourceAnalysisFingerprint = currentSourceFingerprint();
       $("sourceAnalysisPanel").classList.remove("hidden");
       $("analysisSummary").textContent = data.summary || "소스 핵심을 분석했습니다.";
       $("analysisGrid").innerHTML = [
+        renderTopHook(data.topHook),
         renderAnalysisList("추출 원문", data.extractedText),
         renderAnalysisList("주요 키워드", data.coreKeywords),
         renderAnalysisList("원문 핵심", data.originalCore),
@@ -2906,7 +2929,7 @@ ${youtubeContent || $("youtubeSource").value.trim()}
       const source = $("reviewSource").value.trim();
       if (!source && !attachedImage) {
         $("sourceAnalysisStatus").textContent = "분석할 소스 내용이나 이미지를 먼저 넣어 주세요.";
-        return;
+        return false;
       }
       $("analyzeSource").disabled = true;
       $("analyzeSource").textContent = "분석 중...";
@@ -2925,6 +2948,7 @@ ${youtubeContent || $("youtubeSource").value.trim()}
         $("progressRing").style.display = "none";
         renderSourceAnalysis(data);
         setTimeout(() => closeProgress(), 450);
+        return true;
       } catch (error) {
         if (progressTimer) {
           clearInterval(progressTimer);
@@ -2937,6 +2961,7 @@ ${youtubeContent || $("youtubeSource").value.trim()}
         if ($("sourceAnalysisPanel")) $("sourceAnalysisPanel").classList.add("hidden");
         appendProgressLog(`오류: ${error.message}`);
         $("sourceAnalysisStatus").textContent = `소스 분석 실패: ${error.message}`;
+        return false;
       } finally {
         $("analyzeSource").disabled = false;
         $("analyzeSource").textContent = "소스 분석하기";
@@ -3586,12 +3611,14 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
         };
         storeGenerationHistory(lastGeneration);
         $("draft").textContent = "제목을 골랐으면 '선택 제목으로 원고 생성'을 눌러주세요.";
+        return true;
       } catch (error) {
         $("error").textContent = `제목 생성에 실패했습니다: ${error.message}`;
         $("error").classList.remove("hidden");
         $("titles").innerHTML = "";
         $("recommendBox").innerHTML = "";
         $("draft").textContent = "제목 생성에 실패했습니다. 에러 메시지를 확인한 뒤 다시 시도해 주세요.";
+        return false;
       } finally {
         $("generateTitles").textContent = "제목 먼저 생성";
         $("generateTitles").disabled = false;
@@ -3604,7 +3631,7 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
       if (!title) {
         $("error").textContent = "먼저 제목을 생성하고 사용할 제목을 선택해 주세요.";
         $("error").classList.remove("hidden");
-        return;
+        return false;
       }
       if (manualTitle) {
         selectedTitle = manualTitle;
@@ -3635,13 +3662,36 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
           source: $("reviewSource").value.trim()
         };
         storeGenerationHistory(lastGeneration);
+        return true;
       } catch (error) {
         $("error").textContent = `원고 생성에 실패했습니다: ${error.message}`;
         $("error").classList.remove("hidden");
         $("draft").textContent = "원고 생성에 실패했습니다. 에러 메시지를 확인한 뒤 다시 시도해 주세요.";
+        return false;
       } finally {
         $("generateDraftFromTitle").textContent = "선택 제목으로 원고 생성";
         $("generateDraftFromTitle").disabled = false;
+      }
+    }
+
+    async function runAnalyzeTitleFlow({ draft = false } = {}) {
+      const titleButton = $("analyzeThenTitles");
+      const draftButton = $("analyzeThenDraft");
+      titleButton.disabled = true;
+      draftButton.disabled = true;
+      titleButton.textContent = draft ? "원고까지 진행 중..." : "분석/제목 진행 중...";
+      draftButton.textContent = draft ? "분석/제목/원고 진행 중..." : "원고까지";
+      try {
+        const analyzed = await analyzeSource();
+        if (!analyzed) return;
+        const titled = await generateTitlesOnly();
+        if (!titled || !draft) return;
+        await generateDraftFromSelectedTitle();
+      } finally {
+        titleButton.disabled = false;
+        draftButton.disabled = false;
+        titleButton.textContent = "분석하고 제목까지";
+        draftButton.textContent = "분석하고 원고까지";
       }
     }
 
@@ -4604,6 +4654,8 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
     });
     $("analyzeSource").addEventListener("click", analyzeSource);
     $("reviewSource").addEventListener("input", () => clearSourceAnalysis("소스 내용이 바뀌었습니다. 다시 분석해 주세요."));
+    $("analyzeThenTitles").addEventListener("click", () => runAnalyzeTitleFlow({ draft: false }));
+    $("analyzeThenDraft").addEventListener("click", () => runAnalyzeTitleFlow({ draft: true }));
     $("generateTitles").addEventListener("click", generateTitlesOnly);
     $("generateDraftFromTitle").addEventListener("click", generateDraftFromSelectedTitle);
     $("generate").addEventListener("click", generate);

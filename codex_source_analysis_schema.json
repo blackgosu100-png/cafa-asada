@@ -64,6 +64,30 @@
         "type": "string"
       }
     },
+    "topHook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quote",
+        "score",
+        "reason",
+        "mustUseInTitle"
+      ],
+      "properties": {
+        "quote": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "mustUseInTitle": {
+          "type": "boolean"
+        }
+      }
+    },
     "titlePriority": {
       "type": "array",
       "minItems": 1,
@@ -115,6 +139,7 @@
     "hookQuotes",
     "hookScores",
     "reviewerNotes",
+    "topHook",
     "titlePriority",
     "productBridge",
     "titleMustUse",
