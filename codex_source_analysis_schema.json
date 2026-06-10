@@ -57,6 +57,20 @@
         "type": "string"
       }
     },
+    "lifeAnalogyQuotes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "creativeTitleAngles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
     "reviewerNotes": {
       "type": "array",
       "minItems": 1,
@@ -138,6 +152,8 @@
     "emotionCore",
     "hookQuotes",
     "hookScores",
+    "lifeAnalogyQuotes",
+    "creativeTitleAngles",
     "reviewerNotes",
     "topHook",
     "titlePriority",
