@@ -2808,6 +2808,10 @@ ${youtubeContent || $("youtubeSource").value.trim()}
         listForPrompt("검증된 사실", sourceAnalysisResult.verifiedFacts),
         listForPrompt("이미지/영상 단서", sourceAnalysisResult.imageClues),
         listForPrompt("감정 핵심", sourceAnalysisResult.emotionCore),
+        listForPrompt("제목감 원문", sourceAnalysisResult.hookQuotes),
+        listForPrompt("후킹 점수", sourceAnalysisResult.hookScores),
+        listForPrompt("검수 보완", sourceAnalysisResult.reviewerNotes),
+        listForPrompt("제목 우선순위", sourceAnalysisResult.titlePriority),
         listForPrompt("제품 연결 포인트", sourceAnalysisResult.productBridge),
         listForPrompt("제목에 꼭 살릴 단어", sourceAnalysisResult.titleMustUse),
         listForPrompt("제목에 써도 안전한 사실", sourceAnalysisResult.titleSafeFacts),
@@ -2838,6 +2842,10 @@ ${youtubeContent || $("youtubeSource").value.trim()}
         renderAnalysisList("검증된 사실", data.verifiedFacts),
         renderAnalysisList("이미지/영상 단서", data.imageClues),
         renderAnalysisList("감정 핵심", data.emotionCore),
+        renderAnalysisList("제목감 원문", data.hookQuotes),
+        renderAnalysisList("후킹 점수", data.hookScores),
+        renderAnalysisList("검수 보완", data.reviewerNotes),
+        renderAnalysisList("제목 우선순위", data.titlePriority),
         renderAnalysisList("제품 연결 포인트", data.productBridge),
         renderAnalysisList("제목에 꼭 살릴 단어", data.titleMustUse),
         renderAnalysisList("제목에 써도 안전한 사실", data.titleSafeFacts),
@@ -2860,15 +2868,15 @@ ${youtubeContent || $("youtubeSource").value.trim()}
             "첨부 이미지의 글자를 먼저 읽는 중...",
             "OCR 원문과 사진 속 장면을 분리하는 중...",
             "후기 원문에서 숫자, 기간, 사람 반응을 검증하는 중...",
-            "비교/전후관계가 뒤집히지 않았는지 확인하는 중...",
-            "제목에 살릴 단어와 피할 방향을 정리하는 중..."
+            "비교/반전/만족감 문장을 후킹 후보로 점수화하는 중...",
+            "검수자 관점으로 놓친 제목감 문장을 다시 찾는 중..."
           ]
         : [
             "후기 원문을 읽는 중...",
             "숫자, 기간, 반복 고충을 찾는 중...",
             "사람 반응과 감정핵심을 추출하는 중...",
-            "비교/전후관계가 뒤집히지 않았는지 확인하는 중...",
-            "제목에 살릴 단어와 피할 방향을 정리하는 중..."
+            "비교/반전/만족감 문장을 후킹 후보로 점수화하는 중...",
+            "검수자 관점으로 놓친 제목감 문장을 다시 찾는 중..."
           ];
       openProgress("소스 분석");
       appendProgressLog(attachedImage ? "image scanner initialized" : "text scanner initialized");
@@ -2902,7 +2910,7 @@ ${youtubeContent || $("youtubeSource").value.trim()}
           clearInterval(progressTimer);
           progressTimer = null;
         }
-        setProgress(5, 5, "분석 완료", "원문추출/검증사실/이미지단서 정리 완료");
+        setProgress(5, 5, "분석 완료", "원문추출/후킹점수/검수보완 정리 완료");
         $("progressRing").style.display = "none";
         renderSourceAnalysis(data);
         setTimeout(() => closeProgress(), 450);

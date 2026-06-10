@@ -43,6 +43,34 @@
         "type": "string"
       }
     },
+    "hookQuotes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "hookScores": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reviewerNotes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "titlePriority": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
     "productBridge": {
       "type": "array",
       "items": {
@@ -84,6 +112,10 @@
     "verifiedFacts",
     "imageClues",
     "emotionCore",
+    "hookQuotes",
+    "hookScores",
+    "reviewerNotes",
+    "titlePriority",
     "productBridge",
     "titleMustUse",
     "titleSafeFacts",
