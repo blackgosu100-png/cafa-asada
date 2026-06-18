@@ -9,6 +9,7 @@ data/
 vendor/
 dist/
 app_settings.json
+031_naver_cafe/
 
 .env
 .env.*
