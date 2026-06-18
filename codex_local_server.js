@@ -90,6 +90,99 @@ function send(res, status, data, type = "application/json; charset=utf-8") {
   res.end(typeof data === "string" ? data : JSON.stringify(data));
 }
 
+function todayKoreanDate() {
+  const now = new Date();
+  const offsetMs = 9 * 60 * 60 * 1000;
+  return new Date(now.getTime() + offsetMs).toISOString().slice(0, 10);
+}
+
+function safeDailyRoot(inputRoot) {
+  const fallback = path.join(root, "daily_sources");
+  const raw = String(inputRoot || "").trim();
+  if (!raw) return fallback;
+  return path.resolve(raw);
+}
+
+function detectYoutubeUrls(text) {
+  const pattern = /https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)[^\s"'<>]+/gi;
+  return [...new Set(String(text || "").match(pattern) || [])];
+}
+
+function classifySourceFile(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+  if ([".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"].includes(ext)) return "review-image";
+  if ([".txt", ".md", ".url"].includes(ext)) return "text";
+  return "";
+}
+
+async function scanDailyAutomationQueue(input = {}) {
+  const date = String(input.date || "").trim() || todayKoreanDate();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("날짜는 YYYY-MM-DD 형식이어야 합니다.");
+  const rootDir = safeDailyRoot(input.rootDir);
+  const folderPath = path.join(rootDir, date);
+  const items = [];
+  let exists = false;
+
+  try {
+    const entries = await fsp.readdir(folderPath, { withFileTypes: true });
+    exists = true;
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      const filePath = path.join(folderPath, entry.name);
+      const sourceKind = classifySourceFile(entry.name);
+      if (!sourceKind) continue;
+      const stat = await fsp.stat(filePath);
+      if (sourceKind === "review-image") {
+        items.push({
+          id: `${date}-${items.length + 1}`,
+          type: "후기사진",
+          status: "READY",
+          fileName: entry.name,
+          filePath,
+          display: entry.name,
+          nextAction: "이미지 OCR/소스 분석 → 제목/원고 생성",
+          size: stat.size
+        });
+        continue;
+      }
+      const text = await fsp.readFile(filePath, "utf8").catch(() => "");
+      const urls = detectYoutubeUrls(text);
+      urls.forEach((youtubeUrl) => {
+        items.push({
+          id: `${date}-${items.length + 1}`,
+          type: "유튜브URL",
+          status: "READY",
+          fileName: entry.name,
+          filePath,
+          display: youtubeUrl,
+          youtubeUrl,
+          nextAction: "대본/장면 소스화 → 제목/원고 생성",
+          size: stat.size
+        });
+      });
+    }
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+
+  return {
+    date,
+    rootDir,
+    folderPath,
+    exists,
+    itemCount: items.length,
+    items,
+    folderGuide: [
+      `상위 폴더: ${rootDir}`,
+      `오늘 폴더: ${folderPath}`,
+      "후기 사진: PNG/JPG/WEBP 파일을 날짜 폴더에 넣기",
+      "유튜브 URL: TXT/MD/URL 파일 안에 YouTube 링크를 한 줄씩 넣기",
+      "예: daily_sources/2026-06-18/review_01.png",
+      "예: daily_sources/2026-06-18/youtube.txt"
+    ].join("\n")
+  };
+}
+
 function contentTypeFor(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
@@ -1816,6 +1909,13 @@ const server = http.createServer(async (req, res) => {
       const input = JSON.parse(body || "{}");
       const saved = await saveAppSettings(input);
       return send(res, 200, saved);
+    }
+
+    if (req.method === "POST" && url.pathname === "/automation-scan") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await scanDailyAutomationQueue(input);
+      return send(res, 200, result);
     }
 
     if (req.method === "POST" && url.pathname === "/analyze-source-codex") {

@@ -2014,6 +2014,7 @@
         <button class="side-tab active" type="button" data-view="writer">원고 생성</button>
         <button class="side-tab" type="button" data-view="board">카페 게시판 분석</button>
         <button class="side-tab" type="button" data-view="popularTime">인기글 시간대</button>
+        <button class="side-tab" type="button" data-view="dailyQueue">일일 자동화 큐</button>
       </aside>
       <div class="app-content">
     <div id="viewWriter" class="app-view">
@@ -2484,6 +2485,80 @@
         </details>
       </section>
     </div>
+
+    <div id="viewDailyQueue" class="app-view hidden">
+      <section class="panel source-workspace">
+        <h2>일일 자동화 큐</h2>
+        <div class="hint">전용 PC에서 매일 돌릴 소스 폴더를 확인합니다. 날짜별 폴더에 후기 이미지 또는 유튜브 URL 파일을 넣어두면 작업 큐로 감지합니다.</div>
+        <div class="row">
+          <div>
+            <label for="dailySourceRoot">소스 상위 폴더</label>
+            <input id="dailySourceRoot" placeholder="예: C:\Ai_jung\030_naver_cafe_asada\daily_sources" />
+          </div>
+          <div>
+            <label for="dailyQueueDate">작업 날짜</label>
+            <input id="dailyQueueDate" type="date" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="dailyPostTime">희망 발행 시간</label>
+            <input id="dailyPostTime" type="time" value="10:30" />
+          </div>
+          <div>
+            <label for="dailyPostTargetUrl">카페 글쓰기 URL</label>
+            <input id="dailyPostTargetUrl" placeholder="네이버 카페 글쓰기 페이지 URL" />
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="scanDailyQueue" type="button">오늘 소스 폴더 스캔</button>
+          <button class="secondary" id="saveDailyQueueSettings" type="button">설정 저장</button>
+          <button class="ghost" id="copyDailyFolderGuide" type="button">폴더 규칙 복사</button>
+        </div>
+        <div class="save-status" id="dailyQueueStatus"></div>
+      </section>
+
+      <section class="panel">
+        <h2>오늘 큐</h2>
+        <div class="hint" id="dailyQueueSummary">소스 폴더를 스캔하면 후기 이미지와 유튜브 URL을 작업 단위로 보여줍니다.</div>
+        <div class="board-table-wrap">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th>상태</th>
+                <th>소스 종류</th>
+                <th>파일/URL</th>
+                <th>다음 작업</th>
+              </tr>
+            </thead>
+            <tbody id="dailyQueueRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>자동화 단계</h2>
+        <div class="hint">권장 흐름은 GENERATED → REVIEWED → APPROVED → POST_READY → POSTED 입니다. 초반에는 자동 입력까지만 하고 최종 등록은 사람이 확인하는 방식으로 안정화합니다.</div>
+        <div class="board-table-wrap">
+          <table class="board-table">
+            <thead>
+              <tr>
+                <th>단계</th>
+                <th>역할</th>
+                <th>자동화 수준</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1. 소스 감지</td><td>날짜 폴더의 후기 이미지/유튜브 URL 확인</td><td>자동</td></tr>
+              <tr><td>2. 원고 생성</td><td>소스 분석, 제목, 본문, 워드 검수본 생성</td><td>다음 버전</td></tr>
+              <tr><td>3. 검수 전달</td><td>워드 검수본을 카톡/검수 폴더로 전달</td><td>다음 버전</td></tr>
+              <tr><td>4. 게시 준비</td><td>네이버 글쓰기 화면에 제목/본문/사진 자동 입력</td><td>전용 PC에서 단계적 적용</td></tr>
+              <tr><td>5. 최종 등록</td><td>초기에는 사람이 클릭, 안정화 후 옵션화</td><td>선택</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
       </div>
     </div>
   </main>
@@ -2549,6 +2624,7 @@
     const popularTimeStorageKey = "cafePopularTimeLastResult";
     const popularPatternGuideKey = "cafePopularPatternGuide";
     const postTargetUrlKey = "cafePostTargetUrl";
+    const dailyQueueSettingsKey = "cafeDailyQueueSettings";
 
     const samples = {
       review: {
@@ -3638,6 +3714,102 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
       $("postReadyStatus").textContent = "본문을 복사했습니다.";
     }
 
+    function todayInputValue() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+    }
+
+    function defaultDailySourceRoot() {
+      return "C:\\Ai_jung\\030_naver_cafe_asada\\daily_sources";
+    }
+
+    function currentDailyQueueSettings() {
+      return {
+        rootDir: $("dailySourceRoot")?.value.trim() || defaultDailySourceRoot(),
+        date: $("dailyQueueDate")?.value || todayInputValue(),
+        postTime: $("dailyPostTime")?.value || "10:30",
+        postTargetUrl: $("dailyPostTargetUrl")?.value.trim() || ""
+      };
+    }
+
+    function loadDailyQueueSettings() {
+      let saved = {};
+      try {
+        saved = JSON.parse(localStorage.getItem(dailyQueueSettingsKey) || "{}");
+      } catch {
+        saved = {};
+      }
+      if ($("dailySourceRoot")) $("dailySourceRoot").value = saved.rootDir || defaultDailySourceRoot();
+      if ($("dailyQueueDate")) $("dailyQueueDate").value = saved.date || todayInputValue();
+      if ($("dailyPostTime")) $("dailyPostTime").value = saved.postTime || "10:30";
+      if ($("dailyPostTargetUrl")) $("dailyPostTargetUrl").value = saved.postTargetUrl || localStorage.getItem(postTargetUrlKey) || "";
+    }
+
+    function saveDailyQueueSettings() {
+      const settings = currentDailyQueueSettings();
+      localStorage.setItem(dailyQueueSettingsKey, JSON.stringify(settings));
+      if (settings.postTargetUrl) localStorage.setItem(postTargetUrlKey, settings.postTargetUrl);
+      $("dailyQueueStatus").textContent = "일일 자동화 큐 설정을 저장했습니다.";
+      return settings;
+    }
+
+    function renderDailyQueue(result) {
+      const folderText = result.exists
+        ? `폴더: ${result.folderPath}`
+        : `폴더가 아직 없습니다: ${result.folderPath}`;
+      $("dailyQueueSummary").textContent = `${folderText} / 감지된 소스 ${Number(result.itemCount || 0).toLocaleString("ko-KR")}개`;
+      $("dailyQueueRows").innerHTML = (result.items || []).length
+        ? result.items.map((item) => `
+          <tr>
+            <td>${escapeHtml(item.status || "READY")}</td>
+            <td>${escapeHtml(item.type || "")}</td>
+            <td>${escapeHtml(item.display || item.fileName || "")}</td>
+            <td>${escapeHtml(item.nextAction || "")}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="4">날짜 폴더에 후기 이미지 또는 유튜브 URL 파일을 넣어주세요.</td></tr>`;
+    }
+
+    async function scanDailyQueue() {
+      const settings = saveDailyQueueSettings();
+      $("dailyQueueStatus").textContent = "소스 폴더 스캔 중...";
+      try {
+        const response = await fetch("http://127.0.0.1:8787/automation-scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(settings)
+        });
+        if (!response.ok) throw new Error(await response.text());
+        const result = await response.json();
+        renderDailyQueue(result);
+        $("dailyQueueStatus").textContent = result.exists
+          ? `스캔 완료. ${result.itemCount}개 소스를 찾았습니다.`
+          : "스캔 완료. 날짜 폴더가 아직 없습니다.";
+      } catch (error) {
+        $("dailyQueueStatus").textContent = `스캔 실패: ${error.message}`;
+      }
+    }
+
+    async function copyDailyFolderGuide() {
+      const settings = currentDailyQueueSettings();
+      const guide = [
+        "일일 자동화 소스 폴더 규칙",
+        "",
+        `상위 폴더: ${settings.rootDir}`,
+        `날짜 폴더: ${settings.rootDir}\\${settings.date}`,
+        "",
+        "후기 사진: PNG/JPG/WEBP 파일을 날짜 폴더에 넣기",
+        "유튜브 URL: TXT/MD/URL 파일 안에 YouTube 링크를 한 줄씩 넣기",
+        "",
+        "예시:",
+        `${settings.rootDir}\\${settings.date}\\review_01.png`,
+        `${settings.rootDir}\\${settings.date}\\youtube.txt`
+      ].join("\n");
+      await navigator.clipboard.writeText(guide);
+      $("dailyQueueStatus").textContent = "폴더 규칙을 복사했습니다.";
+    }
+
     function stripStaffChecks(text) {
       return String(text || "")
         .replace(/\n{0,3}직원이 확인할 점[\s\S]*$/g, "")
@@ -4348,6 +4520,7 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
       $("viewWriter").classList.toggle("hidden", viewName !== "writer");
       $("viewBoard").classList.toggle("hidden", viewName !== "board");
       $("viewPopularTime").classList.toggle("hidden", viewName !== "popularTime");
+      $("viewDailyQueue").classList.toggle("hidden", viewName !== "dailyQueue");
     }
 
     function parseKoreanNumber(value) {
@@ -4956,6 +5129,9 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
       if (openPostTargetUrl(url)) $("postReadyStatus").textContent = "게시 페이지를 열었습니다.";
     });
     $("downloadDocx").addEventListener("click", downloadDocx);
+    $("scanDailyQueue").addEventListener("click", scanDailyQueue);
+    $("saveDailyQueueSettings").addEventListener("click", saveDailyQueueSettings);
+    $("copyDailyFolderGuide").addEventListener("click", copyDailyFolderGuide);
     document.querySelectorAll(".side-tab").forEach((button) => {
       button.addEventListener("click", () => switchAppView(button.dataset.view));
     });
@@ -5013,6 +5189,7 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
     applyRoutine();
     renderGenerationHistory();
     renderBoardResults();
+    loadDailyQueueSettings();
     loadPopularTimeResult();
     renderResult({ titles: [], draft: "소스를 넣고 제목/원고 생성을 눌러주세요." });
   </script>
