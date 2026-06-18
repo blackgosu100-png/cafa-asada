@@ -1458,6 +1458,62 @@ async function buildDocx(input) {
   return { outputPath, filename };
 }
 
+async function saveReviewDocx(input) {
+  const { outputPath, filename } = await buildDocx(input);
+  const reviewDir = path.join(root, "data", "review_docs");
+  await fsp.mkdir(reviewDir, { recursive: true });
+  const base = path.basename(filename, ".docx");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+$/, "").replace("T", "_");
+  const savedFilename = `${stamp}_${base}.docx`;
+  const savedPath = path.join(reviewDir, savedFilename);
+  await fsp.copyFile(outputPath, savedPath);
+  return { filename: savedFilename, path: savedPath };
+}
+
+async function sendKakaoReview(input) {
+  const chatName = String(input.chatName || "").trim();
+  const filePath = path.resolve(String(input.filePath || ""));
+  const message = String(input.message || "").trim();
+  if (!chatName) throw new Error("카톡방 이름을 입력해 주세요.");
+  if (!filePath) throw new Error("전송할 검수본 파일 경로가 없습니다.");
+  const scriptPath = path.join(root, "kakao_send_review.ps1");
+  await fsp.access(scriptPath);
+  await fsp.access(filePath);
+
+  return await new Promise((resolve, reject) => {
+    const child = spawn("powershell.exe", [
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-STA",
+      "-File",
+      scriptPath,
+      "-ChatName",
+      chatName,
+      "-FilePath",
+      filePath,
+      "-Message",
+      message
+    ], {
+      cwd: root,
+      windowsHide: false
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve({ ok: true, stdout: stdout.trim() });
+      else reject(new Error(stderr || stdout || `kakao sender failed with code ${code}`));
+    });
+  });
+}
+
 function parseCafeMenuUrl(rawUrl) {
   const parsed = new URL(String(rawUrl || "").trim());
   const match = parsed.pathname.match(/\/cafes\/(\d+)\/menus\/(\d+)/);
@@ -2109,6 +2165,20 @@ const server = http.createServer(async (req, res) => {
         "Access-Control-Allow-Origin": "*"
       });
       return res.end(buffer);
+    }
+
+    if (req.method === "POST" && url.pathname === "/save-review-docx") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await saveReviewDocx(input);
+      return send(res, 200, result);
+    }
+
+    if (req.method === "POST" && url.pathname === "/send-kakao-review") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await sendKakaoReview(input);
+      return send(res, 200, result);
     }
 
     if (req.method === "POST" && url.pathname === "/youtube-source") {
