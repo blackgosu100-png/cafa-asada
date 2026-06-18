@@ -187,6 +187,43 @@ async function scanDailyAutomationQueue(input = {}) {
   };
 }
 
+async function loadDailyAutomationSource(input = {}) {
+  const date = String(input.date || "").trim() || todayKoreanDate();
+  const rootDir = safeDailyRoot(input.rootDir);
+  const folderPath = path.resolve(rootDir, date);
+  const filePath = path.resolve(String(input.filePath || ""));
+  if (!filePath || !filePath.startsWith(folderPath + path.sep)) {
+    throw new Error("날짜 폴더 안의 소스 파일만 불러올 수 있습니다.");
+  }
+  const sourceKind = classifySourceFile(filePath);
+  if (!sourceKind) throw new Error("지원하지 않는 소스 파일입니다.");
+
+  if (sourceKind === "review-image") {
+    const buffer = await fsp.readFile(filePath);
+    return {
+      type: "review-image",
+      fileName: path.basename(filePath),
+      filePath,
+      mimeType: contentTypeFor(filePath),
+      base64: buffer.toString("base64"),
+      sourceText: `후기 사진 파일: ${path.basename(filePath)}`
+    };
+  }
+
+  const text = await fsp.readFile(filePath, "utf8");
+  const urls = detectYoutubeUrls(text);
+  const requestedUrl = String(input.youtubeUrl || "").trim();
+  const youtubeUrl = requestedUrl && urls.includes(requestedUrl) ? requestedUrl : urls[0] || "";
+  if (!youtubeUrl) throw new Error("파일 안에서 유튜브 URL을 찾지 못했습니다.");
+  return {
+    type: "youtube-url",
+    fileName: path.basename(filePath),
+    filePath,
+    youtubeUrl,
+    sourceText: youtubeUrl
+  };
+}
+
 function contentTypeFor(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
@@ -1919,6 +1956,13 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       const input = JSON.parse(body || "{}");
       const result = await scanDailyAutomationQueue(input);
+      return send(res, 200, result);
+    }
+
+    if (req.method === "POST" && url.pathname === "/automation-source") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await loadDailyAutomationSource(input);
       return send(res, 200, result);
     }
 
