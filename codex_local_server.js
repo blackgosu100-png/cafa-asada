@@ -119,6 +119,8 @@ async function scanDailyAutomationQueue(input = {}) {
   const date = String(input.date || "").trim() || todayKoreanDate();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("날짜는 YYYY-MM-DD 형식이어야 합니다.");
   const rootDir = safeDailyRoot(input.rootDir);
+  const postTime = String(input.postTime || "").trim();
+  const runNow = Boolean(input.runNow);
   const folderPath = path.join(rootDir, date);
   const items = [];
   let exists = false;
@@ -170,6 +172,8 @@ async function scanDailyAutomationQueue(input = {}) {
     rootDir,
     folderPath,
     exists,
+    postTime,
+    runNow,
     itemCount: items.length,
     items,
     folderGuide: [
