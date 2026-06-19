@@ -1679,6 +1679,7 @@ async function crawlNaverBoard(input) {
   const requestedPages = allPages ? Number(input.pages || 500) : Number(input.pages || 1);
   const pageLimit = Math.min(500, Math.max(1, requestedPages || 1));
   const includeContent = Boolean(input.includeContent);
+  const contentLimit = Math.min(200, Math.max(1, Number(input.contentLimit || 50) || 50));
   const rows = [];
   let crawledPages = 0;
 
@@ -1721,20 +1722,6 @@ async function crawlNaverBoard(input) {
       });
     }
 
-    if (includeContent) {
-      for (const row of rows.filter((item) => item.page === page && item.menuId === menuId)) {
-        try {
-          const detail = await fetchNaverArticleDetail({ cafeId, articleId: row.articleId, referer });
-          row.content = detail.content;
-          row.imageUrls = detail.imageUrls;
-        } catch (error) {
-          row.content = "";
-          row.imageUrls = [];
-          row.detailError = error.message || String(error);
-        }
-        await delay(90);
-      }
-    }
     crawledPages += 1;
     if (!allPages) continue;
     if (!articleCount) break;
@@ -1744,12 +1731,31 @@ async function crawlNaverBoard(input) {
   }
 
   rows.sort((a, b) => (b.views || 0) - (a.views || 0));
+  let contentFetched = 0;
+  if (includeContent) {
+    for (const row of rows.slice(0, contentLimit)) {
+      try {
+        const detail = await fetchNaverArticleDetail({ cafeId, articleId: row.articleId, referer });
+        row.content = detail.content;
+        row.imageUrls = detail.imageUrls;
+        contentFetched += 1;
+      } catch (error) {
+        row.content = "";
+        row.imageUrls = [];
+        row.detailError = error.message || String(error);
+      }
+      await delay(90);
+    }
+  }
+
   return {
     ok: true,
     cafeId,
     menuId,
     startPage,
     pageCount: crawledPages,
+    contentFetched,
+    contentLimit: includeContent ? contentLimit : 0,
     rows
   };
 }
@@ -1770,6 +1776,7 @@ async function crawlNaverBoards(input, urls) {
       menuId: result.menuId,
       startPage: result.startPage,
       pageCount: result.pageCount,
+      contentFetched: result.contentFetched || 0,
       articles: result.rows.length
     });
     await delay(250);
@@ -1781,6 +1788,8 @@ async function crawlNaverBoards(input, urls) {
     reports,
     startPage: reports[0]?.startPage || 1,
     pageCount: reports.reduce((sum, item) => sum + item.pageCount, 0),
+    contentFetched: reports.reduce((sum, item) => sum + (item.contentFetched || 0), 0),
+    contentLimit: input.includeContent ? Math.min(200, Math.max(1, Number(input.contentLimit || 50) || 50)) : 0,
     rows
   };
 }
