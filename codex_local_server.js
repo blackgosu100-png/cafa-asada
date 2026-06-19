@@ -1516,8 +1516,11 @@ async function sendKakaoReview(input) {
 
 function parseCafeMenuUrl(rawUrl) {
   const parsed = new URL(String(rawUrl || "").trim());
+  if (/\/cafes\/\d+\/members\//.test(parsed.pathname)) {
+    throw new Error("회원 프로필/작성글 URL은 게시판 자동 수집 URL이 아닙니다. 카페 게시판 분석에는 /cafes/{cafeId}/menus/{menuId} 형태의 게시판 URL을 넣어 주세요. 회원 페이지는 네이버에서 로그인 세션 기반으로 보여 주는 화면이라, 현재는 해당 화면에서 목록을 복사해 아래 붙여넣기 분석을 사용해 주세요.");
+  }
   const match = parsed.pathname.match(/\/cafes\/(\d+)\/menus\/(\d+)/);
-  if (!match) throw new Error("네이버 카페 f-e 게시판 URL을 입력해 주세요.");
+  if (!match) throw new Error("네이버 카페 f-e 게시판 URL을 입력해 주세요. 예: https://cafe.naver.com/f-e/cafes/23611966/menus/3850");
   return {
     cafeId: match[1],
     menuId: match[2],

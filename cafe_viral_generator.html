@@ -2292,11 +2292,11 @@
     <div id="viewBoard" class="app-view hidden">
       <section class="panel source-workspace">
         <h2>카페 게시판 분석</h2>
-        <div class="hint">네이버 카페 게시판 목록에서 복사한 텍스트를 붙여넣으면 제목, 댓글수, 작성일, 조회수를 정리합니다. 로그인 권한이 필요한 게시판은 먼저 브라우저에서 목록을 열고 복사해 주세요.</div>
+        <div class="hint">네이버 카페 게시판 목록에서 복사한 텍스트를 붙여넣으면 제목, 댓글수, 작성일, 조회수를 정리합니다. URL 자동 수집은 /menus/가 들어간 게시판 URL용이며, /members/ 회원 페이지는 화면에서 목록을 복사해 붙여넣기 분석을 사용해 주세요.</div>
         <div class="row">
           <div>
             <label for="boardUrl">게시판 URL</label>
-            <textarea id="boardUrl" class="compact-textarea" placeholder="https://cafe.naver.com/f-e/cafes/23611966/menus/3108&#10;여러 게시판 URL을 줄바꿈으로 붙여넣어도 됩니다."></textarea>
+            <textarea id="boardUrl" class="compact-textarea" placeholder="https://cafe.naver.com/f-e/cafes/23611966/menus/3108&#10;여러 게시판 URL을 줄바꿈으로 붙여넣어도 됩니다.&#10;회원 URL(/members/...)은 아래 붙여넣기 분석을 사용하세요."></textarea>
           </div>
           <div>
             <label for="boardPages">수집 페이지 수</label>
