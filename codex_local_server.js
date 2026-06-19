@@ -9,6 +9,7 @@ const root = __dirname;
 const port = Number(process.env.PORT || 8787);
 const pythonExe = process.env.PYTHON_EXE || path.join(os.homedir(), ".cache", "codex-runtimes", "codex-primary-runtime", "dependencies", "python", "python.exe");
 const appSettingsPath = path.join(root, "app_settings.json");
+const postDraftCachePath = path.join(root, "data", "naver_post_draft.json");
 
 const defaultAppSettings = {
   ai: {
@@ -52,6 +53,26 @@ async function saveAppSettings(nextSettings) {
   appSettings = mergeSettings(defaultAppSettings, nextSettings || {});
   await fsp.writeFile(appSettingsPath, JSON.stringify(appSettings, null, 2), "utf8");
   return appSettings;
+}
+
+async function savePostDraftCache(input) {
+  const payload = {
+    savedAt: new Date().toISOString(),
+    title: String(input.title || "").trim(),
+    draft: String(input.draft || "").trim(),
+    targetUrl: String(input.targetUrl || "").trim()
+  };
+  if (!payload.title || !payload.draft) {
+    throw new Error("저장할 제목과 본문이 필요합니다.");
+  }
+  await fsp.mkdir(path.dirname(postDraftCachePath), { recursive: true });
+  await fsp.writeFile(postDraftCachePath, JSON.stringify(payload, null, 2), "utf8");
+  return payload;
+}
+
+async function readPostDraftCache() {
+  const raw = await fsp.readFile(postDraftCachePath, "utf8");
+  return JSON.parse(raw);
 }
 
 function promptOverrideBlock() {
@@ -1460,7 +1481,8 @@ async function buildDocx(input) {
 
 async function saveReviewDocx(input) {
   const { outputPath, filename } = await buildDocx(input);
-  const reviewDir = path.join(root, "data", "review_docs");
+  const requestedDir = String(input.reviewDir || "").trim();
+  const reviewDir = requestedDir ? path.resolve(requestedDir) : path.join(root, "data", "review_docs");
   await fsp.mkdir(reviewDir, { recursive: true });
   const base = path.basename(filename, ".docx");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+$/, "").replace("T", "_");
@@ -1468,50 +1490,6 @@ async function saveReviewDocx(input) {
   const savedPath = path.join(reviewDir, savedFilename);
   await fsp.copyFile(outputPath, savedPath);
   return { filename: savedFilename, path: savedPath };
-}
-
-async function sendKakaoReview(input) {
-  const chatName = String(input.chatName || "").trim();
-  const filePath = path.resolve(String(input.filePath || ""));
-  const message = String(input.message || "").trim();
-  if (!chatName) throw new Error("카톡방 이름을 입력해 주세요.");
-  if (!filePath) throw new Error("전송할 검수본 파일 경로가 없습니다.");
-  const scriptPath = path.join(root, "kakao_send_review.ps1");
-  await fsp.access(scriptPath);
-  await fsp.access(filePath);
-
-  return await new Promise((resolve, reject) => {
-    const child = spawn("powershell.exe", [
-      "-NoProfile",
-      "-ExecutionPolicy",
-      "Bypass",
-      "-STA",
-      "-File",
-      scriptPath,
-      "-ChatName",
-      chatName,
-      "-FilePath",
-      filePath,
-      "-Message",
-      message
-    ], {
-      cwd: root,
-      windowsHide: false
-    });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (chunk) => {
-      stdout += chunk.toString();
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr += chunk.toString();
-    });
-    child.on("error", reject);
-    child.on("close", (code) => {
-      if (code === 0) resolve({ ok: true, stdout: stdout.trim() });
-      else reject(new Error(stderr || stdout || `kakao sender failed with code ${code}`));
-    });
-  });
 }
 
 function parseCafeMenuUrl(rawUrl) {
@@ -2020,6 +1998,18 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, saved);
     }
 
+    if (req.method === "POST" && url.pathname === "/post-draft-cache") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const saved = await savePostDraftCache(input);
+      return send(res, 200, saved);
+    }
+
+    if (req.method === "GET" && url.pathname === "/post-draft-cache") {
+      const cached = await readPostDraftCache();
+      return send(res, 200, cached);
+    }
+
     if (req.method === "POST" && url.pathname === "/automation-scan") {
       const body = await readBody(req);
       const input = JSON.parse(body || "{}");
@@ -2183,13 +2173,6 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       const input = JSON.parse(body || "{}");
       const result = await saveReviewDocx(input);
-      return send(res, 200, result);
-    }
-
-    if (req.method === "POST" && url.pathname === "/send-kakao-review") {
-      const body = await readBody(req);
-      const input = JSON.parse(body || "{}");
-      const result = await sendKakaoReview(input);
       return send(res, 200, result);
     }
 

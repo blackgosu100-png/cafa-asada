@@ -51,7 +51,6 @@ $filesToCopy = @(
   "hot_video_develop_source.txt",
   "hot_video_title_source.txt",
   "index.html",
-  "kakao_send_review.ps1",
   "naver_review_copy_helper.html",
   "start_cafe_generator.cmd"
 )
