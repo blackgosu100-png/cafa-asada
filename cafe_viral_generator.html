@@ -2518,6 +2518,7 @@
           </div>
         </div>
         <div class="actions">
+          <button class="secondary" id="openTodaySourceFolder" type="button">오늘 소스 폴더 열기</button>
           <button class="primary" id="scanDailyQueue" type="button">오늘 소스 폴더 스캔</button>
           <button class="primary" id="runQueueConductor" type="button">지휘자 실행</button>
           <button class="secondary" id="runDailyQueueNow" type="button">지금 바로 큐 확인</button>
@@ -3962,6 +3963,24 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
       }
     }
 
+    async function openTodaySourceFolder() {
+      const settings = saveDailyQueueSettings();
+      const folderPath = `${settings.rootDir}\\${settings.date}`;
+      $("dailyQueueStatus").textContent = "오늘 소스 폴더를 여는 중...";
+      try {
+        const response = await fetch("http://127.0.0.1:8787/open-folder", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: folderPath })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || await response.text());
+        $("dailyQueueStatus").textContent = `오늘 소스 폴더를 열었습니다: ${data.path || folderPath}`;
+      } catch (error) {
+        $("dailyQueueStatus").textContent = `폴더 열기 실패: ${error.message}`;
+      }
+    }
+
     async function copyDailyFolderGuide() {
       const settings = currentDailyQueueSettings();
       const guide = [
@@ -5343,6 +5362,7 @@ ${product}는 그런 반복 손질이 많은 매장에서 한 번 비교해볼 �
       if (openPostTargetUrl(url)) $("postReadyStatus").textContent = "게시 페이지를 열었습니다.";
     });
     $("downloadDocx").addEventListener("click", downloadDocx);
+    $("openTodaySourceFolder").addEventListener("click", openTodaySourceFolder);
     $("scanDailyQueue").addEventListener("click", scanDailyQueue);
     $("runQueueConductor").addEventListener("click", runQueueConductor);
     $("runDailyQueueNow").addEventListener("click", () => {

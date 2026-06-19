@@ -75,6 +75,23 @@ async function readPostDraftCache() {
   return JSON.parse(raw);
 }
 
+async function openFolder(input) {
+  const folderPath = path.resolve(String(input.path || "").trim());
+  if (!folderPath) throw new Error("열 폴더 경로가 없습니다.");
+  await fsp.mkdir(folderPath, { recursive: true });
+  return await new Promise((resolve, reject) => {
+    const child = spawn("explorer.exe", [folderPath], {
+      cwd: root,
+      detached: true,
+      stdio: "ignore",
+      windowsHide: false
+    });
+    child.on("error", reject);
+    child.unref();
+    resolve({ ok: true, path: folderPath });
+  });
+}
+
 function promptOverrideBlock() {
   const prompts = appSettings.prompts || {};
   const blocks = [];
@@ -2008,6 +2025,13 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && url.pathname === "/post-draft-cache") {
       const cached = await readPostDraftCache();
       return send(res, 200, cached);
+    }
+
+    if (req.method === "POST" && url.pathname === "/open-folder") {
+      const body = await readBody(req);
+      const input = JSON.parse(body || "{}");
+      const result = await openFolder(input);
+      return send(res, 200, result);
     }
 
     if (req.method === "POST" && url.pathname === "/automation-scan") {
